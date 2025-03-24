@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.daffa0050.assesment1"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.daffa0050.assesment1"
