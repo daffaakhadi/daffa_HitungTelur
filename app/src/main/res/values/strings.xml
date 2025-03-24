@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Hitung Telur</string>
+    <string name="input_kg">Masukkan berat telur (kg)</string>
+    <string name="price_per_kg">Harga per 1 kg:</string>
+    <string name="calculate">Hitung</string>
+    <string name="result">Total Bayar</string>
 </resources>
