@@ -5,4 +5,8 @@
     <string name="price_per_kg">Harga per 1 kg:</string>
     <string name="calculate">Hitung</string>
     <string name="result">Total Bayar</string>
+    <string name="news_button">Lihat Artikel Tentang Telur</string>
+    <string name="news_title">Artikel Tentang Telur</string>
+    <string name="news_content">Telur adalah bahan makanan yang mengandung protein tinggi dan penting untuk tubuh. Pastikan menyimpan telur dengan baik agar tetap segar dan tidak cepat busuk. Berikut artikel lengkap tentang cara menyimpan telur:</string>
+    <string name="open_article">Buka Artikel di Browser</string>
 </resources>
