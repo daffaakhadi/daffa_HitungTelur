@@ -9,7 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -38,19 +38,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
-@Composable
-fun AppNavigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
-        composable(Screen.Home.route) {
-            MainScreen(navController)
-        }
-        composable(Screen.News.route) {
-            NewsScreen(navController)
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavHostController) {
@@ -69,13 +56,16 @@ fun MainScreen(navController: NavHostController) {
     }
 }
 
-
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostController) {
     var kg by remember { mutableStateOf("") }
     var totalBayar by remember { mutableIntStateOf(0) }
-    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val hargaPerKg = 25000
+
+    // Ambil resource string di luar onClick
+    val emptyInputError = stringResource(id = R.string.hitung_error)
+    val invalidWeightError = stringResource(id = R.string.invalid)
 
     Column(
         modifier = modifier
@@ -86,14 +76,14 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             value = kg,
             onValueChange = {
                 kg = it
-                showError = false
+                errorMessage = null  // reset error saat user mulai mengedit
             },
             label = { Text(stringResource(id = R.string.input_kg)) },
-            isError = showError,
+            isError = errorMessage != null,
             supportingText = {
-                if (showError) {
+                if (errorMessage != null) {
                     Text(
-                        text = stringResource(id = R.string.hitung_error),
+                        text = errorMessage!!,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -110,11 +100,18 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
         Button(
             onClick = {
-                if (kg.isBlank()) {
-                    showError = true
-                } else {
-                    val berat = kg.toDoubleOrNull() ?: 0.0
-                    totalBayar = (berat * hargaPerKg).toInt()
+                val berat = kg.toDoubleOrNull()
+                when {
+                    kg.isBlank() -> {
+                        errorMessage = emptyInputError
+                    }
+                    berat == null || berat <= 0.0 -> {
+                        errorMessage = invalidWeightError
+                    }
+                    else -> {
+                        totalBayar = (berat * hargaPerKg).toInt()
+                        errorMessage = null
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -158,7 +155,8 @@ fun NewsScreen(navController: NavHostController) {
                 title = { Text(stringResource(id = R.string.news_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
