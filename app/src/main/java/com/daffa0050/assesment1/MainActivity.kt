@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -30,11 +29,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             Assesment1Theme {
                 val navController = rememberNavController()
-                AppNavigation(navController)
+                NavHost(navController = navController, startDestination = "home") {
+                    composable("home") { MainScreen(navController) }
+                    composable("news") { NewsScreen(navController) }
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -62,14 +65,16 @@ fun MainScreen(navController: NavHostController) {
             )
         }
     ) { innerPadding ->
-        ScreenContent(Modifier.padding(innerPadding), navController)
+        ScreenContent(modifier = Modifier.padding(innerPadding), navController = navController)
     }
 }
 
+
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostController) {
-    var kg by rememberSaveable { mutableStateOf("") }
-    var totalBayar by rememberSaveable { mutableIntStateOf(0) }
+    var kg by remember { mutableStateOf("") }
+    var totalBayar by remember { mutableIntStateOf(0) }
+    var showError by remember { mutableStateOf(false) }
     val hargaPerKg = 25000
 
     Column(
@@ -79,8 +84,20 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     ) {
         OutlinedTextField(
             value = kg,
-            onValueChange = { kg = it },
+            onValueChange = {
+                kg = it
+                showError = false
+            },
             label = { Text(stringResource(id = R.string.input_kg)) },
+            isError = showError,
+            supportingText = {
+                if (showError) {
+                    Text(
+                        text = stringResource(id = R.string.hitung_error),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -93,8 +110,12 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
         Button(
             onClick = {
-                val berat = kg.toDoubleOrNull() ?: 0.0
-                totalBayar = (berat * hargaPerKg).toInt()
+                if (kg.isBlank()) {
+                    showError = true
+                } else {
+                    val berat = kg.toDoubleOrNull() ?: 0.0
+                    totalBayar = (berat * hargaPerKg).toInt()
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -111,13 +132,14 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { navController.navigate(Screen.News.route) },
+            onClick = { navController.navigate("news") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(id = R.string.news_button))
+            Text(text = "Baca Artikel tentang Telur")
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
