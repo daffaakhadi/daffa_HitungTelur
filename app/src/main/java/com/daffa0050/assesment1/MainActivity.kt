@@ -56,73 +56,148 @@ fun MainScreen(navController: NavHostController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostController) {
+    val retailLabel = stringResource(id = R.string.retail)
+    val wholesaleLabel = stringResource(id = R.string.wholesale)
+    val inputKgLabel = stringResource(id = R.string.input_kg)
+    val jenisPembelianLabel = stringResource(id = R.string.jenis_pembelian)
+    val calculateLabel = stringResource(id = R.string.calculate)
+    val calculateWholesaleLabel = stringResource(id = R.string.calculate_grosir)
+    val selectWholesalePackageLabel = stringResource(id = R.string.select_wholesale_package)
+    val resultLabel = stringResource(id = R.string.result)
+    val readArticleLabel = stringResource(id = R.string.read_article)
+    val hitungErrorLabel = stringResource(id = R.string.hitung_error)
+    val invalidInputLabel = stringResource(id = R.string.invalid)
+
+    val jenisOptions = listOf(retailLabel, wholesaleLabel)
+    val grosirOptions = listOf(15, 30, 45, 60, 75, 90)
+    val hargaPerKg = 25000
+    val grosirHargaPer15Kg = 330000
+
+    var jenisPembelian by remember { mutableStateOf(retailLabel) }
     var kg by remember { mutableStateOf("") }
     var totalBayar by remember { mutableIntStateOf(0) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val hargaPerKg = 25000
+    var grosirKg by remember { mutableStateOf(15) }
 
-    // Ambil resource string di luar onClick
-    val emptyInputError = stringResource(id = R.string.hitung_error)
-    val invalidWeightError = stringResource(id = R.string.invalid)
+    var expandedJenis by remember { mutableStateOf(false) }
+    var expandedGrosir by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
     ) {
-        OutlinedTextField(
-            value = kg,
-            onValueChange = {
-                kg = it
-                errorMessage = null  // reset error saat user mulai mengedit
-            },
-            label = { Text(stringResource(id = R.string.input_kg)) },
-            isError = errorMessage != null,
-            supportingText = {
-                if (errorMessage != null) {
-                    Text(
-                        text = errorMessage!!,
-                        color = MaterialTheme.colorScheme.error
+        // Dropdown jenis pembelian
+        ExposedDropdownMenuBox(expanded = expandedJenis, onExpandedChange = { expandedJenis = !expandedJenis }) {
+            OutlinedTextField(
+                readOnly = true,
+                value = jenisPembelian,
+                onValueChange = {},
+                label = { Text(jenisPembelianLabel) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJenis) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+            ExposedDropdownMenu(expanded = expandedJenis, onDismissRequest = { expandedJenis = false }) {
+                jenisOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            jenisPembelian = option
+                            expandedJenis = false
+                            totalBayar = 0
+                            errorMessage = null
+                            kg = ""
+                        }
                     )
                 }
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(text = "${stringResource(id = R.string.price_per_kg)} Rp $hargaPerKg")
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                val berat = kg.toDoubleOrNull()
-                when {
-                    kg.isBlank() -> {
-                        errorMessage = emptyInputError
-                    }
-                    berat == null || berat <= 0.0 -> {
-                        errorMessage = invalidWeightError
-                    }
-                    else -> {
-                        totalBayar = (berat * hargaPerKg).toInt()
-                        errorMessage = null
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(id = R.string.calculate))
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Input untuk eceran
+        if (jenisPembelian == retailLabel) {
+            OutlinedTextField(
+                value = kg,
+                onValueChange = { kg = it; errorMessage = null },
+                label = { Text(inputKgLabel) },
+                isError = errorMessage != null,
+                supportingText = {
+                    errorMessage?.let { msg ->
+                        Text(text = msg, color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    val berat = kg.toDoubleOrNull()
+                    when {
+                        kg.isBlank() -> errorMessage = hitungErrorLabel
+                        berat == null || berat <= 0.0 -> errorMessage = invalidInputLabel
+                        else -> {
+                            totalBayar = (berat * hargaPerKg).toInt()
+                            errorMessage = null
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(calculateLabel)
+            }
+        }
+
+        // Pilihan untuk grosir
+        if (jenisPembelian == wholesaleLabel) {
+            ExposedDropdownMenuBox(expanded = expandedGrosir, onExpandedChange = { expandedGrosir = !expandedGrosir }) {
+                OutlinedTextField(
+                    readOnly = true,
+                    value = "$grosirKg kg",
+                    onValueChange = {},
+                    label = { Text(selectWholesalePackageLabel) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGrosir) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(expanded = expandedGrosir, onDismissRequest = { expandedGrosir = false }) {
+                    grosirOptions.forEach { kgOption ->
+                        DropdownMenuItem(
+                            text = { Text("$kgOption kg") },
+                            onClick = {
+                                grosirKg = kgOption
+                                expandedGrosir = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    totalBayar = (grosirKg / 15) * grosirHargaPer15Kg
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(calculateWholesaleLabel)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
-            text = "${stringResource(id = R.string.result)}: Rp $totalBayar",
+            text = "$resultLabel: Rp $totalBayar",
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -132,11 +207,10 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             onClick = { navController.navigate("news") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Baca Artikel tentang Telur")
+            Text(text = readArticleLabel)
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,7 +230,6 @@ fun NewsScreen(navController: NavHostController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -173,14 +246,15 @@ fun NewsScreen(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Daftar artikel
             articles.forEach { (title, url) ->
                 Button(
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                         context.startActivity(intent)
                     },
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 ) {
                     Text(title)
                 }

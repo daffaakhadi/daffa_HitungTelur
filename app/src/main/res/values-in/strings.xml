@@ -11,4 +11,11 @@
     <string name="open_article">Buka Artikel di Browser</string>
     <string name="hitung_error">Masukkan berat telur terlebih dahulu!</string>
     <string name="invalid">Masukkan berat telur terlebih dahulu!</string>
+    <string name="read_article">Lihat Artikel Tentang Telur</string>
+    <string name="select_purchase_type">Pilih Jenis Pembelian</string>
+    <string name="jenis_pembelian">Pilih Jenis Pembelian</string>
+    <string name="retail">Eceran</string>
+    <string name="wholesale">Grosir</string>
+    <string name="select_wholesale_package">Pilih Paket Grosir</string>
+    <string name="calculate_grosir">Hitung Grosir</string>
 </resources>
