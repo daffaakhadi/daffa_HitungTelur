@@ -7,15 +7,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,11 +81,11 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val hargaPerKg = 25000
     val grosirHargaPer15Kg = 330000
 
-    var jenisPembelian by remember { mutableStateOf(retailLabel) }
-    var kg by remember { mutableStateOf("") }
-    var totalBayar by remember { mutableIntStateOf(0) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var grosirKg by remember { mutableStateOf(15) }
+    var jenisPembelian by rememberSaveable { mutableStateOf(retailLabel) }
+    var kg by rememberSaveable { mutableStateOf("") }
+    var totalBayar by rememberSaveable { mutableIntStateOf(0) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var grosirKg by rememberSaveable { mutableIntStateOf(15) }
 
     var expandedJenis by remember { mutableStateOf(false) }
     var expandedGrosir by remember { mutableStateOf(false) }
@@ -92,7 +95,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             .padding(16.dp)
             .fillMaxWidth()
     ) {
-        // Dropdown jenis pembelian
         ExposedDropdownMenuBox(expanded = expandedJenis, onExpandedChange = { expandedJenis = !expandedJenis }) {
             OutlinedTextField(
                 readOnly = true,
@@ -122,7 +124,23 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Input untuk eceran
+        // Gambar lebih kecil agar muat di small phone
+        if (jenisPembelian == wholesaleLabel) {
+            Image(
+                painter = painterResource(id = R.drawable.telurgrosir),
+                contentDescription = "Telur Grosir",
+                modifier = Modifier.fillMaxWidth().height(150.dp)
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.telureceran),
+                contentDescription = "Telur Eceran",
+                modifier = Modifier.fillMaxWidth().height(150.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         if (jenisPembelian == retailLabel) {
             OutlinedTextField(
                 value = kg,
@@ -158,7 +176,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             }
         }
 
-        // Pilihan untuk grosir
         if (jenisPembelian == wholesaleLabel) {
             ExposedDropdownMenuBox(expanded = expandedGrosir, onExpandedChange = { expandedGrosir = !expandedGrosir }) {
                 OutlinedTextField(
@@ -264,6 +281,7 @@ fun NewsScreen(navController: NavHostController) {
         }
     }
 }
+
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
