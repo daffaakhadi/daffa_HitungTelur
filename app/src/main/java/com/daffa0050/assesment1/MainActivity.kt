@@ -1,8 +1,8 @@
 package com.daffa0050.assesment1
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -73,8 +73,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val selectWholesalePackageLabel = stringResource(id = R.string.select_wholesale_package)
     val resultLabel = stringResource(id = R.string.result)
     val readArticleLabel = stringResource(id = R.string.read_article)
-    val hitungErrorLabel = stringResource(id = R.string.hitung_error)
-    val invalidInputLabel = stringResource(id = R.string.invalid)
 
     val jenisOptions = listOf(retailLabel, wholesaleLabel)
     val grosirOptions = listOf(15, 30, 45, 60, 75, 90)
@@ -84,11 +82,12 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     var jenisPembelian by rememberSaveable { mutableStateOf(retailLabel) }
     var kg by rememberSaveable { mutableStateOf("") }
     var totalBayar by rememberSaveable { mutableIntStateOf(0) }
-    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var grosirKg by rememberSaveable { mutableIntStateOf(15) }
-
+    var errorMessage by rememberSaveable { mutableStateOf("") }
     var expandedJenis by remember { mutableStateOf(false) }
     var expandedGrosir by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
 
     Column(
         modifier = modifier
@@ -114,59 +113,61 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                             jenisPembelian = option
                             expandedJenis = false
                             totalBayar = 0
-                            errorMessage = null
                             kg = ""
+                            errorMessage = ""
                         }
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Gambar lebih kecil agar muat di small phone
-        if (jenisPembelian == wholesaleLabel) {
-            Image(
-                painter = painterResource(id = R.drawable.telurgrosir),
-                contentDescription = "Telur Grosir",
-                modifier = Modifier.fillMaxWidth().height(150.dp)
-            )
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.telureceran),
-                contentDescription = "Telur Eceran",
-                modifier = Modifier.fillMaxWidth().height(150.dp)
-            )
-        }
+        Image(
+            painter = painterResource(id = if (jenisPembelian == wholesaleLabel) R.drawable.telurgrosir else R.drawable.telureceran),
+            contentDescription = "Gambar Telur",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (jenisPembelian == retailLabel) {
             OutlinedTextField(
                 value = kg,
-                onValueChange = { kg = it; errorMessage = null },
-                label = { Text(inputKgLabel) },
-                isError = errorMessage != null,
-                supportingText = {
-                    errorMessage?.let { msg ->
-                        Text(text = msg, color = MaterialTheme.colorScheme.error)
-                    }
+                onValueChange = {
+                    kg = it
+                    errorMessage = ""
                 },
+                label = { Text(inputKgLabel) },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = errorMessage.isNotEmpty(),
+                supportingText = {
+                    if (errorMessage.isNotEmpty()) {
+                        Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                    }
+                }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = {
-                    val berat = kg.toDoubleOrNull()
+                    val kgInput = kg.toDoubleOrNull()
                     when {
-                        kg.isBlank() -> errorMessage = hitungErrorLabel
-                        berat == null || berat <= 0.0 -> errorMessage = invalidInputLabel
+                        kg.isEmpty() -> {
+                            totalBayar = 0
+                            errorMessage = context.getString(R.string.hitung_error)
+                        }
+                        kgInput == null || kgInput <= 0 -> {
+                            totalBayar = 0
+                            errorMessage = context.getString(R.string.invalid)
+                        }
                         else -> {
-                            totalBayar = (berat * hargaPerKg).toInt()
-                            errorMessage = null
+                            totalBayar = (kgInput * hargaPerKg).toInt()
+                            errorMessage = ""
                         }
                     }
                 },
@@ -174,9 +175,7 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             ) {
                 Text(calculateLabel)
             }
-        }
-
-        if (jenisPembelian == wholesaleLabel) {
+        } else {
             ExposedDropdownMenuBox(expanded = expandedGrosir, onExpandedChange = { expandedGrosir = !expandedGrosir }) {
                 OutlinedTextField(
                     readOnly = true,
@@ -201,7 +200,7 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = {
@@ -213,20 +212,37 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = "$resultLabel: Rp $totalBayar",
             style = MaterialTheme.typography.titleMedium
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        if (totalBayar > 0) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    val shareText = context.getString(R.string.share_message, totalBayar, jenisPembelian)
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Bagikan via"))
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Bagikan")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = { navController.navigate("news") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = readArticleLabel)
+            Text(readArticleLabel)
         }
     }
 }

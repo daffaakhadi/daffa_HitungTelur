@@ -18,4 +18,6 @@
     <string name="wholesale">Grosir</string>
     <string name="select_wholesale_package">Pilih Paket Grosir</string>
     <string name="calculate_grosir">Hitung Grosir</string>
+    <string name="share_button">Bagikan</string>
+    <string name="share_message">Halo! Total pembelian telur Anda sebesar Rp %1$d, menggunakan pembelian jenis %2$s.</string>
 </resources>

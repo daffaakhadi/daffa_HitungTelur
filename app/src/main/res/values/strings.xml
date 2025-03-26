@@ -17,4 +17,6 @@
     <string name="calculate_grosir">Hitung Grosir</string>
     <string name="read_article">Lihat Artikel Tentang Telur</string>
     <string name="select_purchase_type">Pilih Jenis Pembayaran</string>
+    <string name="share_button">Bagikan</string>
+    <string name="share_message">Halo! Total pembelian telur Anda sebesar Rp %1$d, menggunakan pembelian jenis %2$s.</string>
 </resources>
