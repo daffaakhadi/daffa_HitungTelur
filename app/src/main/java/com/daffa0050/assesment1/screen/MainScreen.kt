@@ -205,10 +205,26 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
         if (showShareButton) {
             Button(
                 onClick = {
-                    val shareText = if (jenisPembelian == retailLabel) {
-                        "Halo, ini pemesanan telur kamu:\nJenis: $jenisPembelian\nJumlah: $kg kg\nTotal harga: Rp $totalBayar"
-                    } else {
-                        "Halo, ini pemesanan pembelian telur kamu:\nJenis: $jenisPembelian\nJumlah: $grosirKg kg\nTotal harga: Rp $totalBayar"
+                    val shareText = try {
+                        if (jenisPembelian == retailLabel) {
+                            val jumlahKg = kg.toIntOrNull() ?: 0
+                            context.getString(
+                                R.string.share_message,
+                                jenisPembelian,
+                                jumlahKg,
+                                totalBayar
+                            )
+                        } else {
+                            context.getString(
+                                R.string.share_message,
+                                jenisPembelian,
+                                grosirKg,
+                                totalBayar
+                            )
+                        }
+                    } catch (e: Exception) {
+                        // fallback text jika terjadi error formatting
+                        "Halo, ini pemesanan telur kamu:\nJenis: $jenisPembelian\nTotal harga: Rp $totalBayar"
                     }
 
                     val sendIntent = Intent().apply {
@@ -216,12 +232,12 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                         putExtra(Intent.EXTRA_TEXT, shareText)
                         type = "text/plain"
                     }
-                    val shareIntent = Intent.createChooser(sendIntent, "Bagikan via")
+                    val shareIntent = Intent.createChooser(sendIntent, context.getString(R.string.share_button))
                     context.startActivity(shareIntent)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Bagikan")
+                Text(text = stringResource(id = R.string.share_button))
             }
         }
 

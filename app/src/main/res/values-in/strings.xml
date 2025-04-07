@@ -19,5 +19,9 @@
     <string name="select_wholesale_package">Pilih Paket Grosir</string>
     <string name="calculate_grosir">Hitung Grosir</string>
     <string name="share_button">Bagikan</string>
-    <string name="share_message">Halo! Total pembelian telur Anda sebesar Rp %1$d, menggunakan pembelian jenis %2$s.</string>
+    <string name="share_message">Halo, ini pemesanan telur kamu:\\nJenis: %1$s\\nJumlah: %2$d kg\\nTotal harga: Rp %3$d</string>
+    <string name="article_1">"Cara Menyimpan Telur Agar Awet Manfaat Telur untuk Kesehatan Berapa Lama Telur Bisa Disimpan? Telur Ayam Kampung vs Telur Ayam Negeri "</string>
+    <string name="article_2">Manfaat Telur untuk Kesehatan</string>
+    <string name="article_3">Berapa Lama Telur Bisa Disimpan?</string>
+    <string name="article_4">Telur Ayam Kampung vs Telur Ayam Negeri</string>
 </resources>

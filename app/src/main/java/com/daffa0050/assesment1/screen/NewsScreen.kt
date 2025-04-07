@@ -20,11 +20,12 @@ import com.daffa0050.assesment1.R
 fun NewsScreen(navController: NavHostController) {
     val context = LocalContext.current
     val articles = listOf(
-        Pair("Cara Menyimpan Telur Agar Awet", "https://www.kompas.com/food/read/2024/01/30/131300275/cara-menyimpan-telur-agar-awet"),
-        Pair("Manfaat Telur untuk Kesehatan", "https://health.detik.com/berita-detikhealth/d-6007895/7-manfaat-telur-untuk-kesehatan"),
-        Pair("Berapa Lama Telur Bisa Disimpan?", "https://www.cnnindonesia.com/gaya-hidup/20221012153704-262-858901/berapa-lama-telur-bisa-disimpan"),
-        Pair("Telur Ayam Kampung vs Telur Ayam Negeri", "https://www.alodokter.com/telur-ayam-kampung-vs-telur-ayam-negeri-mana-yang-lebih-sehat"),
+        context.getString(R.string.article_1) to "https://www.kompas.com/food/read/2024/01/30/131300275/cara-menyimpan-telur-agar-awet",
+        context.getString(R.string.article_2) to "https://health.detik.com/berita-detikhealth/d-6007895/7-manfaat-telur-untuk-kesehatan",
+        context.getString(R.string.article_3) to "https://www.cnnindonesia.com/gaya-hidup/20221012153704-262-858901/berapa-lama-telur-bisa-disimpan",
+        context.getString(R.string.article_4) to "https://www.alodokter.com/telur-ayam-kampung-vs-telur-ayam-negeri-mana-yang-lebih-sehat"
     )
+
 
     Scaffold(
         topBar = {
