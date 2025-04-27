@@ -20,10 +20,10 @@ import com.daffa0050.assesment1.R
 fun NewsScreen(navController: NavHostController) {
     val context = LocalContext.current
     val articles = listOf(
-        context.getString(R.string.article_1) to "https://www.kompas.com/food/read/2024/01/30/131300275/cara-menyimpan-telur-agar-awet",
-        context.getString(R.string.article_2) to "https://health.detik.com/berita-detikhealth/d-6007895/7-manfaat-telur-untuk-kesehatan",
-        context.getString(R.string.article_3) to "https://www.cnnindonesia.com/gaya-hidup/20221012153704-262-858901/berapa-lama-telur-bisa-disimpan",
-        context.getString(R.string.article_4) to "https://www.alodokter.com/telur-ayam-kampung-vs-telur-ayam-negeri-mana-yang-lebih-sehat"
+        context.getString(R.string.article_1) to "https://www.kompas.com/homey/read/2021/07/22/182625276/tips-menyimpan-telur-agar-lebih-tahan-lama#:~:text=Selalu%20simpan%20telur%20dengan%20sisi%20runcing%20menghadap%20ke%20bawah&text=Kantong%20ini%20terletak%20di%20ujung,area%20yang%20cukup%20kedap%20udara.",
+        context.getString(R.string.article_2) to "https://www.detik.com/sumut/berita/d-7522609/4-manfaat-untuk-tubuh-jika-makan-telur-setiap-hari",
+        context.getString(R.string.article_3) to "https://www.cnnindonesia.com/gaya-hidup/20231208181458-262-1034852/5-cara-menyimpan-telur-agar-awet",
+        context.getString(R.string.article_4) to "https://www.dapurumami.com/artikel-tips/perbedaan-telur-ayam-kampung-dan-telur-ayam-negeri"
     )
 
 
