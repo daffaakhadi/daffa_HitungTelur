@@ -28,4 +28,6 @@
     <string name="save_order">Save Order</string>
     <string name="order_saved_successfully">Order saved successfully!</string>
     <string name="error_fill_all_fields">Please fill all the fields correctly!</string>
+    <string name="buyer_name_error">The buyer\'s name cannot be empty</string>
+    <string name="buyer_address_error">Alamat pembeli tidak boleh kosong</string>
 </resources>

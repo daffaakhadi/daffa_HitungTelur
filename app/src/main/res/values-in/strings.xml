@@ -29,4 +29,6 @@
     <string name="save_order">Simpan Pesanan</string>
     <string name="order_saved_successfully">Pesanan berhasil disimpan!</string>
     <string name="error_fill_all_fields">Tolong lengkapi input dengan benar</string>
+    <string name="buyer_name_error">Nama pembeli tidak boleh kosong</string>
+    <string name="buyer_address_error">The buyer\'s address cannot be empty</string>
 </resources>

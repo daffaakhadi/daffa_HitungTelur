@@ -69,6 +69,8 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
     var namaPembeli by rememberSaveable { mutableStateOf("") }
     var alamatPembeli by rememberSaveable { mutableStateOf("") }
+    var namaPembeliError by rememberSaveable { mutableStateOf("") }
+    var alamatPembeliError by rememberSaveable { mutableStateOf("") }
 
     val context = LocalContext.current
 
@@ -78,20 +80,40 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             .fillMaxWidth()
             .verticalScroll(rememberScrollState()) // Make the entire column scrollable
     ) {
+        // Input Nama Pembeli
         OutlinedTextField(
             value = namaPembeli,
-            onValueChange = { namaPembeli = it },
+            onValueChange = {
+                namaPembeli = it
+                namaPembeliError = "" // Reset error message when input changes
+            },
             label = { Text(namaPembeliLabel) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = namaPembeliError.isNotEmpty(),
+            supportingText = {
+                if (namaPembeliError.isNotEmpty()) {
+                    Text(text = namaPembeliError, color = MaterialTheme.colorScheme.error)
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Input Alamat Pembeli
         OutlinedTextField(
             value = alamatPembeli,
-            onValueChange = { alamatPembeli = it },
+            onValueChange = {
+                alamatPembeli = it
+                alamatPembeliError = "" // Reset error message when input changes
+            },
             label = { Text(alamatPembeliLabel) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = alamatPembeliError.isNotEmpty(),
+            supportingText = {
+                if (alamatPembeliError.isNotEmpty()) {
+                    Text(text = alamatPembeliError, color = MaterialTheme.colorScheme.error)
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -185,28 +207,42 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
         Button(
             onClick = {
-                if (jenisPembelian == retailLabel) {
-                    val kgInput = kg.toDoubleOrNull()
-                    when {
-                        kg.isEmpty() -> {
-                            totalBayar = 0
-                            errorMessage = context.getString(R.string.hitung_error)
-                            showShareButton = false
-                        }
-                        kgInput == null || kgInput <= 0 -> {
-                            totalBayar = 0
-                            errorMessage = context.getString(R.string.invalid)
-                            showShareButton = false
-                        }
-                        else -> {
-                            totalBayar = (kgInput * hargaPerKg).toInt()
-                            errorMessage = ""
-                            showShareButton = true
-                        }
-                    }
+                if (namaPembeli.isEmpty()) {
+                    namaPembeliError = context.getString(R.string.buyer_name_error)
                 } else {
-                    totalBayar = (grosirKg / 15) * grosirHargaPer15Kg
-                    showShareButton = true
+                    namaPembeliError = ""
+                }
+
+                if (alamatPembeli.isEmpty()) {
+                    alamatPembeliError = context.getString(R.string.buyer_address_error)
+                } else {
+                    alamatPembeliError = ""
+                }
+
+                if (namaPembeli.isNotEmpty() && alamatPembeli.isNotEmpty()) {
+                    if (jenisPembelian == retailLabel) {
+                        val kgInput = kg.toDoubleOrNull()
+                        when {
+                            kg.isEmpty() -> {
+                                totalBayar = 0
+                                errorMessage = context.getString(R.string.hitung_error)
+                                showShareButton = false
+                            }
+                            kgInput == null || kgInput <= 0 -> {
+                                totalBayar = 0
+                                errorMessage = context.getString(R.string.invalid)
+                                showShareButton = false
+                            }
+                            else -> {
+                                totalBayar = (kgInput * hargaPerKg).toInt()
+                                errorMessage = ""
+                                showShareButton = true
+                            }
+                        }
+                    } else {
+                        totalBayar = (grosirKg / 15) * grosirHargaPer15Kg
+                        showShareButton = true
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -244,7 +280,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                             )
                         }
                     } catch (e: Exception) {
-                        // fallback text jika terjadi error formatting
                         "Halo, ini pemesanan telur kamu:\nJenis: $jenisPembelian\nTotal harga: Rp $totalBayar"
                     }
 
