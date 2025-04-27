@@ -16,6 +16,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.daffa0050.assesment1.R
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +49,8 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val selectWholesalePackageLabel = stringResource(id = R.string.select_wholesale_package)
     val resultLabel = stringResource(id = R.string.result)
     val readArticleLabel = stringResource(id = R.string.read_article)
+    val namaPembeliLabel = stringResource(id = R.string.buyer_name)
+    val alamatPembeliLabel = stringResource(id = R.string.buyer_address)
 
     var showShareButton by rememberSaveable { mutableStateOf(false) }
 
@@ -63,13 +67,35 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     var expandedJenis by remember { mutableStateOf(false) }
     var expandedGrosir by remember { mutableStateOf(false) }
 
+    var namaPembeli by rememberSaveable { mutableStateOf("") }
+    var alamatPembeli by rememberSaveable { mutableStateOf("") }
+
     val context = LocalContext.current
 
     Column(
         modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState()) // Make the entire column scrollable
     ) {
+        OutlinedTextField(
+            value = namaPembeli,
+            onValueChange = { namaPembeli = it },
+            label = { Text(namaPembeliLabel) },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = alamatPembeli,
+            onValueChange = { alamatPembeli = it },
+            label = { Text(alamatPembeliLabel) },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         ExposedDropdownMenuBox(expanded = expandedJenis, onExpandedChange = { expandedJenis = !expandedJenis }) {
             OutlinedTextField(
                 readOnly = true,
@@ -129,32 +155,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = {
-                    val kgInput = kg.toDoubleOrNull()
-                    when {
-                        kg.isEmpty() -> {
-                            totalBayar = 0
-                            errorMessage = context.getString(R.string.hitung_error)
-                            showShareButton = false
-                        }
-                        kgInput == null || kgInput <= 0 -> {
-                            totalBayar = 0
-                            errorMessage = context.getString(R.string.invalid)
-                            showShareButton = false
-                        }
-                        else -> {
-                            totalBayar = (kgInput * hargaPerKg).toInt()
-                            errorMessage = ""
-                            showShareButton = true
-                        }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(calculateLabel)
-            }
         } else {
             ExposedDropdownMenuBox(expanded = expandedGrosir, onExpandedChange = { expandedGrosir = !expandedGrosir }) {
                 OutlinedTextField(
@@ -181,16 +181,37 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+        }
 
-            Button(
-                onClick = {
+        Button(
+            onClick = {
+                if (jenisPembelian == retailLabel) {
+                    val kgInput = kg.toDoubleOrNull()
+                    when {
+                        kg.isEmpty() -> {
+                            totalBayar = 0
+                            errorMessage = context.getString(R.string.hitung_error)
+                            showShareButton = false
+                        }
+                        kgInput == null || kgInput <= 0 -> {
+                            totalBayar = 0
+                            errorMessage = context.getString(R.string.invalid)
+                            showShareButton = false
+                        }
+                        else -> {
+                            totalBayar = (kgInput * hargaPerKg).toInt()
+                            errorMessage = ""
+                            showShareButton = true
+                        }
+                    }
+                } else {
                     totalBayar = (grosirKg / 15) * grosirHargaPer15Kg
                     showShareButton = true
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(calculateWholesaleLabel)
-            }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (jenisPembelian == retailLabel) calculateLabel else calculateWholesaleLabel)
         }
 
         Spacer(modifier = Modifier.height(12.dp))

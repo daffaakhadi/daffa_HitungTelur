@@ -23,4 +23,9 @@
     <string name="article_2">Benefits of consuming eggs for the body</string>
     <string name="article_3">How to store eggs to keep them fresh</string>
     <string name="article_4">Free-range Eggs vs Regular Eggs</string>
+    <string name="buyer_name">Buyer Name</string>
+    <string name="buyer_address">Buyer Address</string>
+    <string name="save_order">Save Order</string>
+    <string name="order_saved_successfully">Order saved successfully!</string>
+    <string name="error_fill_all_fields">Please fill all the fields correctly!</string>
 </resources>
