@@ -207,17 +207,18 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
         Button(
             onClick = {
-                if (namaPembeli.isEmpty()) {
-                    namaPembeliError = context.getString(R.string.buyer_name_error)
+                namaPembeliError = if (namaPembeli.isEmpty()) {
+                    context.getString(R.string.buyer_name_error)
                 } else {
-                    namaPembeliError = ""
+                    ""
                 }
 
-                if (alamatPembeli.isEmpty()) {
-                    alamatPembeliError = context.getString(R.string.buyer_address_error)
+                alamatPembeliError = if (alamatPembeli.isEmpty()) {
+                    context.getString(R.string.buyer_address_error)
                 } else {
-                    alamatPembeliError = ""
+                    ""
                 }
+
 
                 if (namaPembeli.isNotEmpty() && alamatPembeli.isNotEmpty()) {
                     if (jenisPembelian == retailLabel) {
