@@ -158,6 +158,14 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        Text(
+            text = stringResource(id = R.string.current_price),
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         if (jenisPembelian == retailLabel) {
             OutlinedTextField(
                 value = kg,
@@ -218,7 +226,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
                 } else {
                     ""
                 }
-
 
                 if (namaPembeli.isNotEmpty() && alamatPembeli.isNotEmpty()) {
                     if (jenisPembelian == retailLabel) {

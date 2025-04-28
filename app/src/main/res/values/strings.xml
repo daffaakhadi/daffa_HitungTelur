@@ -29,5 +29,7 @@
     <string name="order_saved_successfully">Order saved successfully!</string>
     <string name="error_fill_all_fields">Please fill all the fields correctly!</string>
     <string name="buyer_name_error">The buyer\'s name cannot be empty</string>
-    <string name="buyer_address_error">Alamat pembeli tidak boleh kosong</string>
+    <string name="buyer_address_error">The buyer\'s address cannot be empty</string>
+    <string name="current_price">Current egg price: IDR 25,000</string>
+
 </resources>
