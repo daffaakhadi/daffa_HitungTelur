@@ -32,4 +32,8 @@
     <string name="buyer_name_error">Nama pembeli tidak boleh kosong</string>
     <string name="buyer_address_error">Alamat pembeli tidak boleh kosong!</string>
     <string name="current_price">Harga Telur saat ini : Rp 25.000</string>
+    <string name="menu_list_pemesanan">List Pemesanan Telur</string>
+    <string name="list_pemesanan_title">Pemesanan Telur</string>
+    <string name="back">Back</string>
+    <string name="list_pemesanan_empty">Halaman list pemesanan telur (belum ada data).</string>
 </resources>

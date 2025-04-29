@@ -31,5 +31,8 @@
     <string name="buyer_name_error">The buyer\'s name cannot be empty</string>
     <string name="buyer_address_error">The buyer\'s address cannot be empty</string>
     <string name="current_price">Current egg price: IDR 25,000</string>
-
+    <string name="menu_list_pemesanan">Egg Order List</string>
+    <string name="list_pemesanan_title">Egg Ordering</string>
+    <string name="back">Back</string>
+    <string name="list_pemesanan_empty">Egg order list page (no data yet).</string>
 </resources>

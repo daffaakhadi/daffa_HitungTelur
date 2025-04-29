@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.daffa0050.assesment1.screen.ListPemesananScreen
 import com.daffa0050.assesment1.screen.MainScreen
 import com.daffa0050.assesment1.screen.NewsScreen
 import com.daffa0050.assesment1.ui.theme.Assesment1Theme
@@ -32,6 +33,8 @@ fun AssesmentApp() {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") { MainScreen(navController) }
             composable("news") { NewsScreen(navController) }
+            composable("main") { MainScreen(navController) }
+            composable("list_pemesanan") { ListPemesananScreen(navController) }
         }
     }
 }

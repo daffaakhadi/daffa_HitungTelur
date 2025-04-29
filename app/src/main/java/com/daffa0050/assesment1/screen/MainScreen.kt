@@ -1,6 +1,8 @@
 package com.daffa0050.assesment1.screen
 
 import android.content.Intent
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,6 +20,10 @@ import androidx.navigation.NavHostController
 import com.daffa0050.assesment1.R
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.ui.tooling.preview.Preview
+import com.daffa0050.assesment1.AssesmentApp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +35,26 @@ fun MainScreen(navController: NavHostController) {
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color(0xFFD7A86E),
                     titleContentColor = Color.White
-                )
+                ),
+                actions = {
+                    var expanded by remember { mutableStateOf(false) }
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.menu_list_pemesanan)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("list_pemesanan")
+                            }
+                        )
+
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -314,4 +339,23 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
             Text(readArticleLabel)
         }
     }
+}
+@Preview(
+    name = "Light Mode",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_NO
+)
+@Composable
+fun Assesment1AppPreviewLight() {
+    AssesmentApp()
+}
+
+@Preview(
+    name = "Dark Mode",
+    showBackground = true,
+    uiMode = UI_MODE_NIGHT_YES
+)
+@Composable
+fun Assesment1AppPreviewDark() {
+    AssesmentApp()
 }
