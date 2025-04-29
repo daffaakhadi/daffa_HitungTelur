@@ -52,19 +52,25 @@ fun MainScreen(navController: NavHostController) {
                                 navController.navigate("list_pemesanan")
                             }
                         )
-
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.read_article)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("news")
+                            }
+                        )
                     }
                 }
             )
         }
     ) { innerPadding ->
-        ScreenContent(modifier = Modifier.padding(innerPadding), navController = navController)
+        ScreenContent(modifier = Modifier.padding(innerPadding))
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostController) {
+fun ScreenContent(modifier: Modifier = Modifier) {
     val retailLabel = stringResource(id = R.string.retail)
     val wholesaleLabel = stringResource(id = R.string.wholesale)
     val inputKgLabel = stringResource(id = R.string.input_kg)
@@ -73,7 +79,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
     val calculateWholesaleLabel = stringResource(id = R.string.calculate_grosir)
     val selectWholesalePackageLabel = stringResource(id = R.string.select_wholesale_package)
     val resultLabel = stringResource(id = R.string.result)
-    val readArticleLabel = stringResource(id = R.string.read_article)
     val namaPembeliLabel = stringResource(id = R.string.buyer_name)
     val alamatPembeliLabel = stringResource(id = R.string.buyer_address)
 
@@ -332,12 +337,6 @@ fun ScreenContent(modifier: Modifier = Modifier, navController: NavHostControlle
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Button(
-            onClick = { navController.navigate("news") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(readArticleLabel)
-        }
     }
 }
 @Preview(
