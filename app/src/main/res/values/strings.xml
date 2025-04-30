@@ -17,7 +17,7 @@
     <string name="read_article">See Article About Eggs</string>
     <string name="select_purchase_type">Select Payment Type</string>
     <string name="share_button">Share</string>
-    <string name="share_message">Hello, here is your egg order:\nType: %1$s\nQuantity: %2$d kg\nTotal price: Rp %3$d</string>
+    <string name="share_message">Hello, here is your egg order:\Purchase Type: %1$s\nQuantity: %2$s kg\nTotal price: Rp %3$d</string>
     <string name="article_1">Tips for storing eggs</string>
     <string name="article_2">Benefits of consuming eggs for the body</string>
     <string name="article_3">How to store eggs to keep them fresh</string>
@@ -25,7 +25,6 @@
     <string name="buyer_name">Buyer Name</string>
     <string name="buyer_address">Buyer Address</string>
     <string name="save_order">Save Order</string>
-    <string name="order_saved_successfully">Order saved successfully!</string>
     <string name="error_fill_all_fields">Please fill all the fields correctly!</string>
     <string name="buyer_name_error">The buyer\'s name cannot be empty</string>
     <string name="buyer_address_error">The buyer\'s address cannot be empty</string>
@@ -36,8 +35,8 @@
     <string name="list_pemesanan_empty">Egg order list page (no data yet).</string>
     <string name="select">Select</string>
     <string name="select_purchase_type_error">Please select the type of purchase first</string>
-    <string name="news_button">See</string>
     <string name="select_wholesale_option">Select (kg)</string>
+    <string name="order_success_message">Order Succesfully!</string>
 
 
 </resources>

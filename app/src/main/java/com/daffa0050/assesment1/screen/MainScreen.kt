@@ -5,6 +5,7 @@ package com.daffa0050.assesment1.screen
 import android.app.Application
 import android.content.Intent
 import android.content.res.Configuration.*
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,7 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.daffa0050.assesment1.AssesmentApp
 import com.daffa0050.assesment1.model.Pemesanan
 import com.daffa0050.assesment1.model.PemesananViewModel
-import com.daffa0050.assesment1.viewmodel.AppViewModelProvider
+import com.daffa0050.assesment1.model.AppViewModelProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -283,6 +284,13 @@ fun ScreenContent(
                     )
                     viewModel.tambahPemesanan(pemesanan)
 
+                    // Show Toast message for successful order
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.order_success_message),
+                        Toast.LENGTH_SHORT
+                    ).show()
+
                     showShareButton = true
                 }
             },
@@ -291,6 +299,7 @@ fun ScreenContent(
         ) {
             Text(stringResource(if (jenisPembelian == retailLabel) R.string.calculate else R.string.calculate_grosir))
         }
+
 
         Spacer(Modifier.height(12.dp))
 
@@ -304,7 +313,9 @@ fun ScreenContent(
         if (showShareButton) {
             Button(
                 onClick = {
-                    val shareText = "Halo, ini pemesanan telur kamu:\nJenis: $jenisPembelian\nTotal harga: Rp $totalBayar"
+                    val shareText = context.getString(R.string.share_message, jenisPembelian, kg, totalBayar)
+
+
                     val sendIntent = Intent().apply {
                         action = Intent.ACTION_SEND
                         putExtra(Intent.EXTRA_TEXT, shareText)
@@ -318,6 +329,7 @@ fun ScreenContent(
                 Text(stringResource(R.string.share_button))
             }
         }
+
 
         Spacer(Modifier.height(12.dp))
     }

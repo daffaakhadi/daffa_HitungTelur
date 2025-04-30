@@ -5,7 +5,6 @@
     <string name="price_per_kg">Harga per 1 kg:</string>
     <string name="calculate">Hitung</string>
     <string name="result">Total Bayar</string>
-    <string name="news_button">Lihat Artikel Tentang Telur</string>
     <string name="news_title">Artikel Tentang Telur</string>
     <string name="news_content">Telur adalah bahan makanan yang mengandung protein tinggi dan penting untuk tubuh. Pastikan menyimpan telur dengan baik agar tetap segar dan tidak cepat busuk. Berikut artikel lengkap tentang cara menyimpan telur:</string>
     <string name="open_article">Buka Artikel di Browser</string>
@@ -19,7 +18,7 @@
     <string name="select_wholesale_package">Pilih Paket Grosir</string>
     <string name="calculate_grosir">Hitung</string>
     <string name="share_button">Bagikan</string>
-    <string name="share_message">Halo, ini pemesanan telur kamu:\\nJenis: %1$s\\nJumlah: %2$d kg\\nTotal harga: Rp %3$d</string>
+    <string name="share_message">Halo, ini pemesanan telur kamu:\\nJenis: %1$s\\nJumlah: %2$s kg\\nTotal harga: Rp %3$d</string>
     <string name="article_1">Bagaimana cara menyimpan telur?</string>
     <string name="article_2">Manfaat Telur untuk Kesehatan</string>
     <string name="article_3">Bagaimana cara menyimapn telur agar awet</string>
@@ -27,7 +26,6 @@
     <string name="buyer_name">Nama Pembeli</string>
     <string name="buyer_address">Alamat Pembeli</string>
     <string name="save_order">Simpan Pesanan</string>
-    <string name="order_saved_successfully">Pesanan berhasil disimpan!</string>
     <string name="error_fill_all_fields">Tolong lengkapi input dengan benar</string>
     <string name="buyer_name_error">Nama pembeli tidak boleh kosong</string>
     <string name="buyer_address_error">Alamat pembeli tidak boleh kosong!</string>
@@ -39,4 +37,5 @@
     <string name="select">Pilihan</string>
     <string name="select_purchase_type_error">Silakan pilih jenis pembelian terlebih dahulu</string>
     <string name="select_wholesale_option">Pilihan (kg)</string>
+    <string name="order_success_message">Pemesanan berhasil!</string>
 </resources>
