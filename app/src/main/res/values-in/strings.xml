@@ -17,7 +17,7 @@
     <string name="retail">Eceran</string>
     <string name="wholesale">Grosir</string>
     <string name="select_wholesale_package">Pilih Paket Grosir</string>
-    <string name="calculate_grosir">Hitung Grosir</string>
+    <string name="calculate_grosir">Hitung</string>
     <string name="share_button">Bagikan</string>
     <string name="share_message">Halo, ini pemesanan telur kamu:\\nJenis: %1$s\\nJumlah: %2$d kg\\nTotal harga: Rp %3$d</string>
     <string name="article_1">Bagaimana cara menyimpan telur?</string>
@@ -36,4 +36,6 @@
     <string name="list_pemesanan_title">Pemesanan Telur</string>
     <string name="back">Back</string>
     <string name="list_pemesanan_empty">Halaman list pemesanan telur (belum ada data).</string>
+    <string name="select">Pilihan</string>
+    <string name="select_purchase_type_error">Silakan pilih jenis pembelian terlebih dahulu</string>
 </resources>

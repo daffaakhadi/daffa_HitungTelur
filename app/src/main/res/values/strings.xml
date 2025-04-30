@@ -13,7 +13,7 @@
     <string name="retail">Retail</string>
     <string name="wholesale">Wholesale</string>
     <string name="select_wholesale_package">Select Wholesale Package</string>
-    <string name="calculate_grosir">Calculate Wholesale</string>
+    <string name="calculate_grosir">Count</string>
     <string name="read_article">See Article About Eggs</string>
     <string name="select_purchase_type">Select Payment Type</string>
     <string name="share_button">Share</string>
@@ -34,4 +34,9 @@
     <string name="list_pemesanan_title">Egg Ordering</string>
     <string name="back">Back</string>
     <string name="list_pemesanan_empty">Egg order list page (no data yet).</string>
+    <string name="select">Select</string>
+    <string name="select_purchase_type_error">Please select the type of purchase first</string>
+    <string name="news_button">See</string>
+
+
 </resources>

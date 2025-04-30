@@ -84,12 +84,13 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
     var showShareButton by rememberSaveable { mutableStateOf(false) }
 
-    val jenisOptions = listOf(retailLabel, wholesaleLabel)
+    val selectLabel = stringResource(id = R.string.select)
+    val jenisOptions = listOf(selectLabel, retailLabel, wholesaleLabel)
     val grosirOptions = listOf(15, 30, 45, 60, 75, 90)
     val hargaPerKg = 25000
     val grosirHargaPer15Kg = 330000
 
-    var jenisPembelian by rememberSaveable { mutableStateOf(retailLabel) }
+    var jenisPembelian by rememberSaveable { mutableStateOf(selectLabel) }
     var kg by rememberSaveable { mutableStateOf("") }
     var totalBayar by rememberSaveable { mutableIntStateOf(0) }
     var grosirKg by rememberSaveable { mutableIntStateOf(15) }
@@ -178,13 +179,16 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Image(
-            painter = painterResource(id = if (jenisPembelian == wholesaleLabel) R.drawable.telurgrosir else R.drawable.telureceran),
-            contentDescription = "Gambar Telur",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-        )
+        if (jenisPembelian != selectLabel) {
+            Image(
+                painter = painterResource(id = if (jenisPembelian == wholesaleLabel) R.drawable.telurgrosir else R.drawable.telureceran),
+                contentDescription = "Gambar Telur",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+            )
+        }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -258,6 +262,14 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                 }
 
                 if (namaPembeli.isNotEmpty() && alamatPembeli.isNotEmpty()) {
+                    if (jenisPembelian == selectLabel) {
+                        errorMessage = context.getString(R.string.select_purchase_type_error)
+                        showShareButton = false
+                        totalBayar = 0
+                        return@Button
+                    }
+
+
                     if (jenisPembelian == retailLabel) {
                         val kgInput = kg.toDoubleOrNull()
                         when {
@@ -266,7 +278,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                                 errorMessage = context.getString(R.string.hitung_error)
                                 showShareButton = false
                             }
-                            kgInput == null || kgInput <= 0 -> {
+                            kgInput == null || kgInput <= 0 || kg.startsWith("0") -> {
                                 totalBayar = 0
                                 errorMessage = context.getString(R.string.invalid)
                                 showShareButton = false
@@ -277,12 +289,14 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                                 showShareButton = true
                             }
                         }
-                    } else {
+                    }
+                    else {
                         totalBayar = (grosirKg / 15) * grosirHargaPer15Kg
                         showShareButton = true
                     }
                 }
             },
+            enabled = jenisPembelian != selectLabel,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (jenisPembelian == retailLabel) calculateLabel else calculateWholesaleLabel)
