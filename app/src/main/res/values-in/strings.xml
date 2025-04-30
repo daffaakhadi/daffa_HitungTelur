@@ -38,4 +38,5 @@
     <string name="list_pemesanan_empty">Halaman list pemesanan telur (belum ada data).</string>
     <string name="select">Pilihan</string>
     <string name="select_purchase_type_error">Silakan pilih jenis pembelian terlebih dahulu</string>
+    <string name="select_wholesale_option">Pilihan (kg)</string>
 </resources>

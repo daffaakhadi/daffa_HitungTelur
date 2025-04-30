@@ -78,6 +78,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
     val calculateLabel = stringResource(id = R.string.calculate)
     val calculateWholesaleLabel = stringResource(id = R.string.calculate_grosir)
     val selectWholesalePackageLabel = stringResource(id = R.string.select_wholesale_package)
+    val selectWholesaleOptionLabel = stringResource(id = R.string.select_wholesale_option)
     val resultLabel = stringResource(id = R.string.result)
     val namaPembeliLabel = stringResource(id = R.string.buyer_name)
     val alamatPembeliLabel = stringResource(id = R.string.buyer_address)
@@ -86,14 +87,15 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
     val selectLabel = stringResource(id = R.string.select)
     val jenisOptions = listOf(selectLabel, retailLabel, wholesaleLabel)
-    val grosirOptions = listOf(15, 30, 45, 60, 75, 90)
+    val grosirOptions = listOf(selectWholesaleOptionLabel) + listOf(15, 30, 45, 60, 75, 90).map { "$it kg" }
+
     val hargaPerKg = 25000
     val grosirHargaPer15Kg = 330000
 
     var jenisPembelian by rememberSaveable { mutableStateOf(selectLabel) }
     var kg by rememberSaveable { mutableStateOf("") }
+    var grosirKg by rememberSaveable { mutableStateOf(selectWholesaleOptionLabel) }
     var totalBayar by rememberSaveable { mutableIntStateOf(0) }
-    var grosirKg by rememberSaveable { mutableIntStateOf(15) }
     var errorMessage by rememberSaveable { mutableStateOf("") }
     var expandedJenis by remember { mutableStateOf(false) }
     var expandedGrosir by remember { mutableStateOf(false) }
@@ -109,14 +111,14 @@ fun ScreenContent(modifier: Modifier = Modifier) {
         modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState()) // Make the entire column scrollable
+            .verticalScroll(rememberScrollState())
     ) {
         // Input Nama Pembeli
         OutlinedTextField(
             value = namaPembeli,
             onValueChange = {
                 namaPembeli = it
-                namaPembeliError = "" // Reset error message when input changes
+                namaPembeliError = ""
             },
             label = { Text(namaPembeliLabel) },
             modifier = Modifier.fillMaxWidth(),
@@ -135,7 +137,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             value = alamatPembeli,
             onValueChange = {
                 alamatPembeli = it
-                alamatPembeliError = "" // Reset error message when input changes
+                alamatPembeliError = ""
             },
             label = { Text(alamatPembeliLabel) },
             modifier = Modifier.fillMaxWidth(),
@@ -149,6 +151,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Dropdown Jenis Pembelian
         ExposedDropdownMenuBox(expanded = expandedJenis, onExpandedChange = { expandedJenis = !expandedJenis }) {
             OutlinedTextField(
                 readOnly = true,
@@ -169,6 +172,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                             expandedJenis = false
                             totalBayar = 0
                             kg = ""
+                            grosirKg = selectWholesaleOptionLabel
                             errorMessage = ""
                             showShareButton = false
                         }
@@ -188,7 +192,6 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                     .height(120.dp)
             )
         }
-
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -219,11 +222,11 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-        } else {
+        } else if (jenisPembelian == wholesaleLabel) {
             ExposedDropdownMenuBox(expanded = expandedGrosir, onExpandedChange = { expandedGrosir = !expandedGrosir }) {
                 OutlinedTextField(
                     readOnly = true,
-                    value = "$grosirKg kg",
+                    value = grosirKg,
                     onValueChange = {},
                     label = { Text(selectWholesalePackageLabel) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGrosir) },
@@ -234,7 +237,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                 ExposedDropdownMenu(expanded = expandedGrosir, onDismissRequest = { expandedGrosir = false }) {
                     grosirOptions.forEach { kgOption ->
                         DropdownMenuItem(
-                            text = { Text("$kgOption kg") },
+                            text = { Text(kgOption) },
                             onClick = {
                                 grosirKg = kgOption
                                 expandedGrosir = false
@@ -249,17 +252,8 @@ fun ScreenContent(modifier: Modifier = Modifier) {
 
         Button(
             onClick = {
-                namaPembeliError = if (namaPembeli.isEmpty()) {
-                    context.getString(R.string.buyer_name_error)
-                } else {
-                    ""
-                }
-
-                alamatPembeliError = if (alamatPembeli.isEmpty()) {
-                    context.getString(R.string.buyer_address_error)
-                } else {
-                    ""
-                }
+                namaPembeliError = if (namaPembeli.isEmpty()) context.getString(R.string.buyer_name_error) else ""
+                alamatPembeliError = if (alamatPembeli.isEmpty()) context.getString(R.string.buyer_address_error) else ""
 
                 if (namaPembeli.isNotEmpty() && alamatPembeli.isNotEmpty()) {
                     if (jenisPembelian == selectLabel) {
@@ -268,7 +262,6 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                         totalBayar = 0
                         return@Button
                     }
-
 
                     if (jenisPembelian == retailLabel) {
                         val kgInput = kg.toDoubleOrNull()
@@ -289,10 +282,17 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                                 showShareButton = true
                             }
                         }
-                    }
-                    else {
-                        totalBayar = (grosirKg / 15) * grosirHargaPer15Kg
-                        showShareButton = true
+                    } else {
+                        if (grosirKg == selectWholesaleOptionLabel) {
+                            totalBayar = 0
+                            errorMessage = context.getString(R.string.hitung_error)
+                            showShareButton = false
+                        } else {
+                            val beratKg = grosirKg.split(" ")[0].toInt()
+                            totalBayar = (beratKg / 15) * grosirHargaPer15Kg
+                            showShareButton = true
+                            errorMessage = ""
+                        }
                     }
                 }
             },
@@ -315,22 +315,8 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             Button(
                 onClick = {
                     val shareText = try {
-                        if (jenisPembelian == retailLabel) {
-                            val jumlahKg = kg.toIntOrNull() ?: 0
-                            context.getString(
-                                R.string.share_message,
-                                jenisPembelian,
-                                jumlahKg,
-                                totalBayar
-                            )
-                        } else {
-                            context.getString(
-                                R.string.share_message,
-                                jenisPembelian,
-                                grosirKg,
-                                totalBayar
-                            )
-                        }
+                        val jumlahKg = if (jenisPembelian == retailLabel) kg.toIntOrNull() ?: 0 else grosirKg.split(" ")[0].toInt()
+                        context.getString(R.string.share_message, jenisPembelian, jumlahKg, totalBayar)
                     } catch (e: Exception) {
                         "Halo, ini pemesanan telur kamu:\nJenis: $jenisPembelian\nTotal harga: Rp $totalBayar"
                     }
@@ -350,7 +336,6 @@ fun ScreenContent(modifier: Modifier = Modifier) {
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-
     }
 }
 @Preview(
