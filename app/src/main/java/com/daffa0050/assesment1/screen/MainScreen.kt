@@ -296,6 +296,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
                     }
                 }
             },
+
             enabled = jenisPembelian != selectLabel,
             modifier = Modifier.fillMaxWidth()
         ) {
