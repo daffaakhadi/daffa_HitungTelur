@@ -19,7 +19,7 @@ abstract class PemesananDb : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     PemesananDb::class.java,
-                    "pemesanantelur.db"
+                    "pemesanantelur_db"
                 ).build()
                 INSTANCE = instance
                 instance
