@@ -196,11 +196,15 @@ fun ScreenContent(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = if (jenisPembelian == retailLabel) "Harga per kg: Rp $hargaPerKg"
-                else "Harga grosir per 15kg: Rp $grosirHargaPer15Kg",
+                text = if (jenisPembelian == retailLabel) {
+                    stringResource(id = R.string.current_price_eceran, hargaPerKg)
+                } else {
+                    stringResource(id = R.string.current_price_grosir, grosirHargaPer15Kg)
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
+
         }
 
         if (jenisPembelian == retailLabel) {
@@ -284,12 +288,19 @@ fun ScreenContent(
                     )
                     viewModel.tambahPemesanan(pemesanan)
 
-                    // Show Toast message for successful order
                     Toast.makeText(
                         context,
                         context.getString(R.string.order_success_message),
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    namaPembeli = ""
+                    alamatPembeli = ""
+                    kg = ""
+                    grosirKg = selectWholesaleOptionLabel
+                    totalBayar = 0
+
+                    jenisPembelian = selectLabel
 
                     showShareButton = true
                 }
@@ -299,6 +310,7 @@ fun ScreenContent(
         ) {
             Text(stringResource(if (jenisPembelian == retailLabel) R.string.calculate else R.string.calculate_grosir))
         }
+
 
 
         Spacer(Modifier.height(12.dp))

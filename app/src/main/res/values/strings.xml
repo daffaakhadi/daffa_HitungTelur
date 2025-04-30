@@ -28,7 +28,6 @@
     <string name="error_fill_all_fields">Please fill all the fields correctly!</string>
     <string name="buyer_name_error">The buyer\'s name cannot be empty</string>
     <string name="buyer_address_error">The buyer\'s address cannot be empty</string>
-    <string name="current_price">Current egg price: IDR 25,000</string>
     <string name="menu_list_pemesanan">Egg Order List</string>
     <string name="list_pemesanan_title">Egg Ordering</string>
     <string name="back">Back</string>
@@ -37,6 +36,7 @@
     <string name="select_purchase_type_error">Please select the type of purchase first</string>
     <string name="select_wholesale_option">Select (kg)</string>
     <string name="order_success_message">Order Succesfully!</string>
-
+    <string name="current_price_eceran">Price per kg: IDR %1$d</string>
+    <string name="current_price_grosir">Price per 15 kg: IDR %1$d</string>
 
 </resources>

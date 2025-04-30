@@ -29,7 +29,6 @@
     <string name="error_fill_all_fields">Tolong lengkapi input dengan benar</string>
     <string name="buyer_name_error">Nama pembeli tidak boleh kosong</string>
     <string name="buyer_address_error">Alamat pembeli tidak boleh kosong!</string>
-    <string name="current_price">Harga Telur saat ini : Rp 25.000</string>
     <string name="menu_list_pemesanan">List Pemesanan Telur</string>
     <string name="list_pemesanan_title">Pemesanan Telur</string>
     <string name="back">Back</string>
@@ -38,4 +37,6 @@
     <string name="select_purchase_type_error">Silakan pilih jenis pembelian terlebih dahulu</string>
     <string name="select_wholesale_option">Pilihan (kg)</string>
     <string name="order_success_message">Pemesanan berhasil!</string>
+    <string name="current_price_eceran">Harga per kg: Rp %1$d</string>
+    <string name="current_price_grosir">Harga per kg: Rp %1$d</string>
 </resources>
