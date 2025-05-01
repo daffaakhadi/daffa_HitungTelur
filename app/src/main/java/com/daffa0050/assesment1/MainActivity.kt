@@ -8,9 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.daffa0050.assesment1.screen.EditPemesananScreen
 import com.daffa0050.assesment1.screen.ListPemesananScreen
 import com.daffa0050.assesment1.screen.MainScreen
 import com.daffa0050.assesment1.screen.NewsScreen
@@ -35,6 +38,15 @@ fun AssesmentApp() {
             composable("news") { NewsScreen(navController) }
             composable("main") { MainScreen(navController) }
             composable("list_pemesanan") { ListPemesananScreen(navController) }
+
+            // ✅ Tambahan: route untuk edit pemesanan
+            composable(
+                "edit_pemesanan/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getInt("id") ?: 0
+                EditPemesananScreen(navController = navController, id = id)
+            }
         }
     }
 }

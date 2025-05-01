@@ -51,4 +51,6 @@
     <string name="share_text">Order:\nName: %1$s\nAddress: %2$s\nType: %3$s\nQuantity: %4$d kg\nTotal Price: Rp %5$s</string>
     <string name="list">List Interface</string>
     <string name="grid">Grid Interface</string>
+    <string name="update">Update</string>
+    <string name="edit_pemesanan_title">Edit Order Egg</string>
 </resources>

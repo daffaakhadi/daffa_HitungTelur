@@ -20,4 +20,10 @@ interface PemesananDao {
 
     @Query("SELECT SUM(totalHarga) FROM pemesanan WHERE jenis = 'grosir'")
     fun getTotalGrosir(): Flow<Int?>
+
+    @Query("SELECT * FROM pemesanan WHERE id = :id")
+    fun getPemesananById(id: Int): Flow<Pemesanan?>
+
+    @androidx.room.Update
+    suspend fun updatePemesanan(pemesanan: Pemesanan)
 }
