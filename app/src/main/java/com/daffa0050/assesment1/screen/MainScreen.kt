@@ -108,6 +108,25 @@ fun ScreenContent(
     var expandedGrosir by remember { mutableStateOf(false) }
     var showShareButton by rememberSaveable { mutableStateOf(false) }
 
+
+    LaunchedEffect(kg, grosirKg, jenisPembelian) {
+        totalBayar = when {
+            jenisPembelian == retailLabel && kg.isNotEmpty() -> {
+                val kgInput = kg.toDoubleOrNull()
+                if (kgInput != null && kgInput > 0 && !kg.startsWith("0")) {
+                    (kgInput * hargaPerKg).toInt()
+                } else {
+                    0
+                }
+            }
+            jenisPembelian == wholesaleLabel && grosirKg != selectWholesaleOptionLabel -> {
+                val beratKg = grosirKg.split(" ")[0].toInt()
+                (beratKg / 15) * grosirHargaPer15Kg
+            }
+            else -> 0
+        }
+    }
+
     Column(
         modifier = modifier
             .padding(16.dp)
@@ -249,6 +268,31 @@ fun ScreenContent(
 
         Spacer(Modifier.height(12.dp))
 
+        // Menampilkan total pembayaran dengan tampilan yang menonjol
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.result),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "Rp $totalBayar",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
         Button(
             onClick = {
                 namaPembeliError = if (namaPembeli.isEmpty()) context.getString(R.string.buyer_name_error) else ""
@@ -266,14 +310,11 @@ fun ScreenContent(
                             errorMessage = context.getString(R.string.invalid)
                             return@Button
                         }
-                        totalBayar = (kgInput * hargaPerKg).toInt()
                     } else {
                         if (grosirKg == selectWholesaleOptionLabel) {
                             errorMessage = context.getString(R.string.hitung_error)
                             return@Button
                         }
-                        val beratKg = grosirKg.split(" ")[0].toInt()
-                        totalBayar = (beratKg / 15) * grosirHargaPer15Kg
                     }
 
                     val pemesanan = Pemesanan(
@@ -283,7 +324,7 @@ fun ScreenContent(
                             context.getString(R.string.retail)
                         else
                             context.getString(R.string.wholesale),
-                        jumlahKg = if (jenisPembelian == retailLabel) kg.toIntOrNull() ?: 0 else grosirKg.split(" ")[0].toInt(),
+                        jumlahKg = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
                         totalHarga = totalBayar
                     )
                     viewModel.tambahPemesanan(pemesanan)
@@ -298,31 +339,16 @@ fun ScreenContent(
                     alamatPembeli = ""
                     kg = ""
                     grosirKg = selectWholesaleOptionLabel
-                    totalBayar = 0
-
                     jenisPembelian = selectLabel
-
+                    totalBayar = 0
                     showShareButton = true
                 }
             },
-            enabled = jenisPembelian != selectLabel,
+            enabled = jenisPembelian != selectLabel && totalBayar > 0,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(if (jenisPembelian == retailLabel) R.string.calculate else R.string.calculate_grosir))
+            Text(stringResource(R.string.calculate))
         }
-
-
-
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            text = "${stringResource(R.string.result)}: Rp $totalBayar",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-
 
         Spacer(Modifier.height(12.dp))
     }
