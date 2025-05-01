@@ -14,7 +14,7 @@
     <string name="wholesale">Wholesale</string>
     <string name="select_wholesale_package">Select Wholesale Package</string>
     <string name="calculate_grosir">Count</string>
-    <string name="read_article">See Article About Eggs</string>
+    <string name="read_article">Article About Eggs</string>
     <string name="select_purchase_type">Select Payment Type</string>
     <string name="share_button">Share</string>
     <string name="share_message">Hello, here is your egg order:\Purchase Type: %1$s\nQuantity: %2$s kg\nTotal price: Rp %3$d</string>
@@ -35,7 +35,7 @@
     <string name="select">Select</string>
     <string name="select_purchase_type_error">Please select the type of purchase first</string>
     <string name="select_wholesale_option">Select (kg)</string>
-    <string name="order_success_message">Order Succesfully!</string>
+    <string name="order_success_message">Order Success, Saved in Order Egg List</string>
     <string name="current_price_eceran">Price per kg: IDR %1$d</string>
     <string name="current_price_grosir">Price per 15 kg: IDR %1$d</string>
     <string name="list_pemesanan_order">Order List</string>
@@ -53,4 +53,6 @@
     <string name="grid">Grid Interface</string>
     <string name="update">Update</string>
     <string name="edit_pemesanan_title">Edit Order Egg</string>
+    <string name="dropdown_icon">Select</string>
+    <string name="close_icon">Close Icon</string>
 </resources>

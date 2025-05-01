@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -176,20 +178,31 @@ fun EditPemesananScreen(
 
     var nama by remember { mutableStateOf("") }
     var alamat by remember { mutableStateOf("") }
-    var jenis by remember { mutableStateOf("eceran") }
+    val retailValue = stringResource(R.string.retail)
+    val wholesaleValue = stringResource(R.string.wholesale)
+
+    var jenis by remember { mutableStateOf(retailValue) }
     var jumlah by remember { mutableStateOf("") }
 
     var expanded by remember { mutableStateOf(false) }
     var weightExpanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
-
     val wholesaleWeights = listOf(15, 30, 45, 60, 75, 90)
 
     val buyerNameError = stringResource(R.string.buyer_name_error)
     val buyerAddressError = stringResource(R.string.buyer_address_error)
     val selectPurchaseTypeError = stringResource(R.string.select_purchase_type_error)
     val invalidError = stringResource(R.string.invalid)
+    val retailText = stringResource(R.string.retail)
+    val wholesaleText = stringResource(R.string.wholesale)
+    val buyerNameLabel = stringResource(R.string.buyer_name)
+    val buyerAddressLabel = stringResource(R.string.buyer_address)
+    val jenisPembelianLabel = stringResource(R.string.jenis_pembelian)
+    val inputKgLabel = stringResource(R.string.input_kg)
+    val updateButtonText = stringResource(R.string.update)
+    val editPemesananTitle = stringResource(R.string.edit_pemesanan_title)
+    val dropdownContentDesc = stringResource(R.string.dropdown_icon)
+    val closeIconContentDesc = stringResource(R.string.close_icon)
 
     LaunchedEffect(pemesanan) {
         pemesanan?.let {
@@ -206,10 +219,29 @@ fun EditPemesananScreen(
             .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = stringResource(R.string.edit_pemesanan_title),
-            style = MaterialTheme.typography.titleLarge
-        )
+        // Title bar with close button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = editPemesananTitle,
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            IconButton(
+                onClick = {
+                    navController.popBackStack()
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = closeIconContentDesc,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
 
         errorMessage?.let {
             Text(
@@ -222,22 +254,22 @@ fun EditPemesananScreen(
         OutlinedTextField(
             value = nama,
             onValueChange = { nama = it },
-            label = { Text(stringResource(R.string.buyer_name)) },
+            label = { Text(buyerNameLabel) },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = alamat,
             onValueChange = { alamat = it },
-            label = { Text(stringResource(R.string.buyer_address)) },
+            label = { Text(buyerAddressLabel) },
             modifier = Modifier.fillMaxWidth()
         )
 
         Box {
             OutlinedTextField(
-                value = if (jenis == "eceran") stringResource(R.string.retail) else stringResource(R.string.wholesale),
+                value = if (jenis == retailValue) retailText else wholesaleText,
                 onValueChange = {},
-                label = { Text(stringResource(R.string.jenis_pembelian)) },
+                label = { Text(jenisPembelianLabel) },
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = true
             )
@@ -246,16 +278,16 @@ fun EditPemesananScreen(
                 onDismissRequest = { expanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.retail)) },
+                    text = { Text(retailText) },
                     onClick = {
-                        jenis = "eceran"
+                        jenis = retailValue
                         expanded = false
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.wholesale)) },
+                    text = { Text(wholesaleText) },
                     onClick = {
-                        jenis = "grosir"
+                        jenis = wholesaleValue
                         expanded = false
                         // Reset jumlah to minimum wholesale value if switching to wholesale
                         if (jumlah.toIntOrNull() == null || jumlah.toIntOrNull()!! < 15) {
@@ -268,18 +300,19 @@ fun EditPemesananScreen(
                 .matchParentSize()
                 .clickable { expanded = true })
         }
-        if (jenis == "grosir") {
+
+        if (jenis == wholesaleValue) {
             Box {
                 OutlinedTextField(
                     value = jumlah,
                     onValueChange = { jumlah = it },
-                    label = { Text(stringResource(R.string.input_kg)) },
+                    label = { Text(inputKgLabel) },
                     modifier = Modifier.fillMaxWidth(),
                     readOnly = true,
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown",
+                            contentDescription = dropdownContentDesc,
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -312,7 +345,7 @@ fun EditPemesananScreen(
             OutlinedTextField(
                 value = jumlah,
                 onValueChange = { jumlah = it },
-                label = { Text(stringResource(R.string.input_kg)) },
+                label = { Text(inputKgLabel) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
@@ -338,7 +371,7 @@ fun EditPemesananScreen(
                     return@Button
                 }
 
-                val totalHarga = if (jenis == "eceran") jumlahInt * 23000
+                val totalHarga = if (jenis == retailValue) jumlahInt * 23000
                 else (jumlahInt / 15) * 330000
 
                 val updated = Pemesanan(
@@ -357,10 +390,7 @@ fun EditPemesananScreen(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(R.string.update))
+            Text(updateButtonText)
         }
     }
 }
-
-
-

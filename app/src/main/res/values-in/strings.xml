@@ -36,7 +36,7 @@
     <string name="select">Pilihan</string>
     <string name="select_purchase_type_error">Silakan pilih jenis pembelian terlebih dahulu</string>
     <string name="select_wholesale_option">Pilihan (kg)</string>
-    <string name="order_success_message">Pemesanan berhasil!</string>
+    <string name="order_success_message">Pemesanan berhasil, Lihat di List Pemesanan Telur</string>
     <string name="current_price_eceran">Harga per kg: Rp %1$d</string>
     <string name="current_price_grosir">Harga per kg: Rp %1$d</string>
     <string name="list_pemesanan_order">Daftar Pemesanan</string>
@@ -54,4 +54,6 @@
     <string name="grid">Tampilan grid</string>
     <string name="update">Perbarui Data</string>
     <string name="edit_pemesanan_title">Edit Pemesanan Telur</string>
+    <string name="dropdown_icon">Pilih</string>
+    <string name="close_icon">Ikon Tutup</string>
 </resources>
