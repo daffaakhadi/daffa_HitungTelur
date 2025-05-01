@@ -38,5 +38,17 @@
     <string name="order_success_message">Order Succesfully!</string>
     <string name="current_price_eceran">Price per kg: IDR %1$d</string>
     <string name="current_price_grosir">Price per 15 kg: IDR %1$d</string>
-
+    <string name="list_pemesanan_order">Order List</string>
+    <string name="total_eceran">Retail Total: Rp %1$s</string>
+    <string name="total_grosir">Wholesale Total: Rp %1$s</string>
+    <string name="label_nama">Name: %1$s</string>
+    <string name="label_alamat">Address: %1$s</string>
+    <string name="label_jenis">Type: %1$s</string>
+    <string name="label_jumlah">Quantity: %1$d kg</string>
+    <string name="label_total_harga">Total Price: Rp %1$s</string>
+    <string name="button_share">Share</string>
+    <string name="share_title">Share Order</string>
+    <string name="share_text">Order:\nName: %1$s\nAddress: %2$s\nType: %3$s\nQuantity: %4$d kg\nTotal Price: Rp %5$s</string>
+    <string name="list">List Interface</string>
+    <string name="grid">Grid Interface</string>
 </resources>

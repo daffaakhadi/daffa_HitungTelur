@@ -39,4 +39,17 @@
     <string name="order_success_message">Pemesanan berhasil!</string>
     <string name="current_price_eceran">Harga per kg: Rp %1$d</string>
     <string name="current_price_grosir">Harga per kg: Rp %1$d</string>
+    <string name="list_pemesanan_order">Daftar Pemesanan</string>
+    <string name="total_eceran">Total Eceran: Rp %1$s</string>
+    <string name="total_grosir">Total Grosir: Rp %1$s</string>
+    <string name="label_nama">Nama: %1$s</string>
+    <string name="label_alamat">Alamat: %1$s</string>
+    <string name="label_jenis">Jenis: %1$s</string>
+    <string name="label_jumlah">Jumlah: %1$d kg</string>
+    <string name="label_total_harga">Total Harga: Rp %1$s</string>
+    <string name="button_share">Bagikan</string>
+    <string name="share_title">Bagikan Pemesanan</string>
+    <string name="share_text">Pemesanan:\nNama: %1$s\nAlamat: %2$s\nJenis: %3$s\nJumlah: %4$d kg\nTotal Harga: Rp %5$s</string>
+    <string name="list">Tampilan list</string>
+    <string name="grid">Tampilan grid</string>
 </resources>

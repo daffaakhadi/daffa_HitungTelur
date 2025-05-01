@@ -1,9 +1,6 @@
-// MainScreen.kt
-
 package com.daffa0050.assesment1.screen
 
 import android.app.Application
-import android.content.Intent
 import android.content.res.Configuration.*
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -282,7 +279,10 @@ fun ScreenContent(
                     val pemesanan = Pemesanan(
                         nama = namaPembeli,
                         alamat = alamatPembeli,
-                        jenis = if (jenisPembelian == retailLabel) "eceran" else "grosir",
+                        jenis = if (jenisPembelian == retailLabel)
+                            context.getString(R.string.retail)
+                        else
+                            context.getString(R.string.wholesale),
                         jumlahKg = if (jenisPembelian == retailLabel) kg.toIntOrNull() ?: 0 else grosirKg.split(" ")[0].toInt(),
                         totalHarga = totalBayar
                     )
@@ -322,25 +322,6 @@ fun ScreenContent(
 
         Spacer(Modifier.height(12.dp))
 
-        if (showShareButton) {
-            Button(
-                onClick = {
-                    val shareText = context.getString(R.string.share_message, jenisPembelian, kg, totalBayar)
-
-
-                    val sendIntent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, shareText)
-                        type = "text/plain"
-                    }
-                    val shareIntent = Intent.createChooser(sendIntent, context.getString(R.string.share_button))
-                    context.startActivity(shareIntent)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.share_button))
-            }
-        }
 
 
         Spacer(Modifier.height(12.dp))
