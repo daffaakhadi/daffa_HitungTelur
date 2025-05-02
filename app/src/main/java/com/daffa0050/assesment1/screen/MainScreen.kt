@@ -321,9 +321,9 @@ fun ScreenContent(
                         nama = namaPembeli,
                         alamat = alamatPembeli,
                         jenis = if (jenisPembelian == retailLabel)
-                            context.getString(R.string.retail)
+                            "Eceran"
                         else
-                            context.getString(R.string.wholesale),
+                            "Grosir",
                         jumlahKg = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
                         totalHarga = totalBayar
                     )

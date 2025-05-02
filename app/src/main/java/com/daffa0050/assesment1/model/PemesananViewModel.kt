@@ -18,13 +18,17 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
         .map { it.sortedByDescending { p -> p.id } }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val totalEceran = pemesananDao.getTotalEceran()
-        .map { it ?: 0 }
-        .stateIn(viewModelScope, SharingStarted.Lazily, 0)
+    val totalEceran = allPemesanan.map { pesanan ->
+        pesanan
+            .filter { it.jenis == "Eceran" }
+            .sumOf { it.totalHarga }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
-    val totalGrosir = pemesananDao.getTotalGrosir()
-        .map { it ?: 0 }
-        .stateIn(viewModelScope, SharingStarted.Lazily, 0)
+    val totalGrosir = allPemesanan.map { pesanan ->
+        pesanan
+            .filter { it.jenis == "Grosir" }
+            .sumOf { it.totalHarga }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
     fun getPemesananById(id: Int): Flow<Pemesanan?> {
         return pemesananDao.getPemesananById(id)
