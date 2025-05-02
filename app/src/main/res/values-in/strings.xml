@@ -56,4 +56,9 @@
     <string name="edit_pemesanan_title">Edit Pemesanan Telur</string>
     <string name="dropdown_icon">Pilih</string>
     <string name="close_icon">Ikon Tutup</string>
+    <string name="delete">Hapus</string>
+    <string name="delete_confirmation_title">Konfirmasi Hapus</string>
+    <string name="delete_confirmation_message">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="cancel">Batal</string>
+    <string name="confirm_delete">Ya, Hapus</string>
 </resources>

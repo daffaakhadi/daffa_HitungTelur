@@ -24,6 +24,9 @@ interface PemesananDao {
     @Query("SELECT * FROM pemesanan WHERE id = :id")
     fun getPemesananById(id: Int): Flow<Pemesanan?>
 
+    @Query("DELETE FROM pemesanan WHERE id = :id")
+    suspend fun deletePemesanan(id: Int)
+
     @androidx.room.Update
     suspend fun updatePemesanan(pemesanan: Pemesanan)
 }

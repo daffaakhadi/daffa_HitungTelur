@@ -33,7 +33,9 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
     suspend fun updatePemesanan(pemesanan: Pemesanan) {
         pemesananDao.updatePemesanan(pemesanan)
     }
-
+    suspend fun deletePemesanan(id: Int) {
+        pemesananDao.deletePemesanan(id)
+    }
 
     fun tambahPemesanan(pemesanan: Pemesanan) {
         viewModelScope.launch {

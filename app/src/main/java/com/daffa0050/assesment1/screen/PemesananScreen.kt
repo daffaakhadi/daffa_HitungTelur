@@ -189,6 +189,8 @@ fun EditPemesananScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val wholesaleWeights = listOf(15, 30, 45, 60, 75, 90)
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     val buyerNameError = stringResource(R.string.buyer_name_error)
     val buyerAddressError = stringResource(R.string.buyer_address_error)
     val selectPurchaseTypeError = stringResource(R.string.select_purchase_type_error)
@@ -204,6 +206,13 @@ fun EditPemesananScreen(
     val dropdownContentDesc = stringResource(R.string.dropdown_icon)
     val closeIconContentDesc = stringResource(R.string.close_icon)
 
+    // Additional strings for delete functionality
+    val deleteButtonText = stringResource(id = R.string.delete)
+    val deleteConfirmationTitle = stringResource(id = R.string.delete_confirmation_title)
+    val deleteConfirmationMessage = stringResource(id = R.string.delete_confirmation_message)
+    val cancelText = stringResource(id = R.string.cancel)
+    val confirmDeleteText = stringResource(id = R.string.confirm_delete)
+
     LaunchedEffect(pemesanan) {
         pemesanan?.let {
             nama = it.nama
@@ -211,6 +220,36 @@ fun EditPemesananScreen(
             jenis = it.jenis
             jumlah = it.jumlahKg.toString()
         }
+    }
+
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(deleteConfirmationTitle) },
+            text = { Text(deleteConfirmationMessage) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            viewModel.deletePemesanan(id)
+                            showDeleteDialog = false
+                            navController.popBackStack()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(confirmDeleteText)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(cancelText)
+                }
+            }
+        )
     }
 
     Column(
@@ -351,6 +390,7 @@ fun EditPemesananScreen(
             )
         }
 
+        // Update button
         Button(
             onClick = {
                 if (nama.isBlank()) {
@@ -391,6 +431,19 @@ fun EditPemesananScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(updateButtonText)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Delete button
+        Button(
+            onClick = { showDeleteDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error
+            )
+        ) {
+            Text(deleteButtonText)
         }
     }
 }
