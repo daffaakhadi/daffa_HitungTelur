@@ -38,6 +38,9 @@ import androidx.navigation.NavHostController
 import com.daffa0050.assesment1.R
 import com.daffa0050.assesment1.model.Pemesanan
 import com.daffa0050.assesment1.model.PemesananViewModel
+import com.daffa0050.assesment1.util.SettingsDataStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +48,8 @@ fun ListPemesananScreen(
     navController: NavHostController,
     viewModel: PemesananViewModel = viewModel()
 ) {
-    var showList by remember { mutableStateOf(true) }
+    val dataStore = SettingsDataStore(LocalContext.current)
+    val showList by dataStore.layoutFlow.collectAsState(true)
     val pemesananList by viewModel.allPemesanan.collectAsState()
     val totalEceran by viewModel.totalEceran.collectAsState()
     val totalGrosir by viewModel.totalGrosir.collectAsState()
@@ -64,7 +68,7 @@ fun ListPemesananScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showList = !showList }) {
+                    IconButton(onClick = { CoroutineScope(Dispatchers.IO).launch{dataStore.saveLayout(!showList)} }) {
                         Icon(
                             painter = painterResource(
                                 if (showList) R.drawable.baseline_grid_view_24
@@ -206,7 +210,6 @@ fun EditPemesananScreen(
     val dropdownContentDesc = stringResource(R.string.dropdown_icon)
     val closeIconContentDesc = stringResource(R.string.close_icon)
 
-    // Additional strings for delete functionality
     val deleteButtonText = stringResource(id = R.string.delete)
     val deleteConfirmationTitle = stringResource(id = R.string.delete_confirmation_title)
     val deleteConfirmationMessage = stringResource(id = R.string.delete_confirmation_message)
@@ -411,7 +414,7 @@ fun EditPemesananScreen(
                     return@Button
                 }
 
-                val totalHarga = if (jenis == retailValue) jumlahInt * 23000
+                val totalHarga = if (jenis == retailValue) jumlahInt * 25000
                 else (jumlahInt / 15) * 330000
 
                 val updated = Pemesanan(
