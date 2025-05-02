@@ -63,6 +63,15 @@ fun MainScreen(navController: NavHostController) {
                                 navController.navigate("news")
                             }
                         )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.keluar)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("welcome") {
+                                    popUpTo("welcome") { inclusive = true }
+                                }
+                            }
+                        )
                     }
                 }
             )

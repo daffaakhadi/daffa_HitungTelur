@@ -17,6 +17,7 @@ import com.daffa0050.assesment1.screen.EditPemesananScreen
 import com.daffa0050.assesment1.screen.ListPemesananScreen
 import com.daffa0050.assesment1.screen.MainScreen
 import com.daffa0050.assesment1.screen.NewsScreen
+import com.daffa0050.assesment1.screen.WelcomeScreen
 import com.daffa0050.assesment1.ui.theme.Assesment1Theme
 
 class MainActivity : ComponentActivity() {
@@ -33,13 +34,13 @@ class MainActivity : ComponentActivity() {
 fun AssesmentApp() {
     Assesment1Theme {
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "home") {
+        NavHost(navController = navController, startDestination = "welcome") {
+            composable("welcome") { WelcomeScreen(navController) }
             composable("home") { MainScreen(navController) }
             composable("news") { NewsScreen(navController) }
             composable("main") { MainScreen(navController) }
             composable("list_pemesanan") { ListPemesananScreen(navController) }
 
-            // ✅ Tambahan: route untuk edit pemesanan
             composable(
                 "edit_pemesanan/{id}",
                 arguments = listOf(navArgument("id") { type = NavType.IntType })
