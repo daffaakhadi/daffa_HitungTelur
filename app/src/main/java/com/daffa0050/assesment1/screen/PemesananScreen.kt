@@ -4,7 +4,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import android.content.Context
 import android.content.Intent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,9 +11,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -25,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -68,7 +69,11 @@ fun ListPemesananScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { CoroutineScope(Dispatchers.IO).launch{dataStore.saveLayout(!showList)} }) {
+                    IconButton(onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            dataStore.saveLayout(!showList)
+                        }
+                    }) {
                         Icon(
                             painter = painterResource(
                                 if (showList) R.drawable.baseline_grid_view_24
@@ -87,6 +92,17 @@ fun ListPemesananScreen(
                     titleContentColor = Color.White
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate("home")
+                },
+                containerColor = Color(0xFFD7A86E),
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Kembali ke Home")
+            }
         }
     ) { innerPadding ->
         Column(
@@ -122,6 +138,7 @@ fun ListPemesananScreen(
         }
     }
 }
+
 
 @Composable
 private fun PemesananItem(
@@ -171,6 +188,7 @@ private fun PemesananItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPemesananScreen(
     navController: NavHostController,
@@ -182,8 +200,8 @@ fun EditPemesananScreen(
 
     var nama by remember { mutableStateOf("") }
     var alamat by remember { mutableStateOf("") }
-    val retailValue = stringResource(R.string.retail)
-    val wholesaleValue = stringResource(R.string.wholesale)
+    val retailValue = "Eceran"
+    val wholesaleValue = "Grosir"
 
     var jenis by remember { mutableStateOf(retailValue) }
     var jumlah by remember { mutableStateOf("") }
@@ -199,8 +217,6 @@ fun EditPemesananScreen(
     val buyerAddressError = stringResource(R.string.buyer_address_error)
     val selectPurchaseTypeError = stringResource(R.string.select_purchase_type_error)
     val invalidError = stringResource(R.string.invalid)
-    val retailText = stringResource(R.string.retail)
-    val wholesaleText = stringResource(R.string.wholesale)
     val buyerNameLabel = stringResource(R.string.buyer_name)
     val buyerAddressLabel = stringResource(R.string.buyer_address)
     val jenisPembelianLabel = stringResource(R.string.jenis_pembelian)
@@ -225,7 +241,6 @@ fun EditPemesananScreen(
         }
     }
 
-    // Delete confirmation dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -240,9 +255,7 @@ fun EditPemesananScreen(
                             navController.popBackStack()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text(confirmDeleteText)
                 }
@@ -255,198 +268,189 @@ fun EditPemesananScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Title bar with close button
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = editPemesananTitle,
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            IconButton(
-                onClick = {
-                    navController.popBackStack()
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = closeIconContentDesc,
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-
-        errorMessage?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        OutlinedTextField(
-            value = nama,
-            onValueChange = { nama = it },
-            label = { Text(buyerNameLabel) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = alamat,
-            onValueChange = { alamat = it },
-            label = { Text(buyerAddressLabel) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Box {
-            OutlinedTextField(
-                value = if (jenis == retailValue) retailText else wholesaleText,
-                onValueChange = {},
-                label = { Text(jenisPembelianLabel) },
-                modifier = Modifier.fillMaxWidth(),
-                readOnly = true
-            )
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text(retailText) },
-                    onClick = {
-                        jenis = retailValue
-                        expanded = false
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(editPemesananTitle) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.Close, contentDescription = closeIconContentDesc)
                     }
-                )
-                DropdownMenuItem(
-                    text = { Text(wholesaleText) },
-                    onClick = {
-                        jenis = wholesaleValue
-                        expanded = false
-                        // Reset jumlah to minimum wholesale value if switching to wholesale
-                        if (jumlah.toIntOrNull() == null || jumlah.toIntOrNull()!! < 15) {
-                            jumlah = "15"
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+
+                    errorMessage?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    OutlinedTextField(
+                        value = nama,
+                        onValueChange = { nama = it },
+                        label = { Text(buyerNameLabel) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = alamat,
+                        onValueChange = { alamat = it },
+                        label = { Text(buyerAddressLabel) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Box {
+                        OutlinedTextField(
+                            value = if (jenis == retailValue) "Eceran" else "Grosir",
+                            onValueChange = {},
+                            label = { Text(jenisPembelianLabel) },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true
+                        )
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Eceran") },
+                                onClick = {
+                                    jenis = retailValue
+                                    expanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Grosir") },
+                                onClick = {
+                                    jenis = wholesaleValue
+                                    expanded = false
+                                    if (jumlah.toIntOrNull() == null || jumlah.toIntOrNull()!! < 15) {
+                                        jumlah = "15"
+                                    }
+                                }
+                            )
                         }
-                    }
-                )
-            }
-            Spacer(modifier = Modifier
-                .matchParentSize()
-                .clickable { expanded = true })
-        }
-
-        if (jenis == wholesaleValue) {
-            Box {
-                OutlinedTextField(
-                    value = jumlah,
-                    onValueChange = { jumlah = it },
-                    label = { Text(inputKgLabel) },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = dropdownContentDesc,
-                            tint = MaterialTheme.colorScheme.onSurface
+                        Spacer(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable { expanded = true }
                         )
                     }
-                )
-                DropdownMenu(
-                    expanded = weightExpanded,
-                    onDismissRequest = { weightExpanded = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                ) {
-                    wholesaleWeights.forEach { weight ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    "$weight kg",
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            },
-                            onClick = {
-                                jumlah = weight.toString()
-                                weightExpanded = false
+
+                    if (jenis == wholesaleValue) {
+                        Box {
+                            OutlinedTextField(
+                                value = jumlah,
+                                onValueChange = { jumlah = it },
+                                label = { Text(inputKgLabel) },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = dropdownContentDesc
+                                    )
+                                }
+                            )
+                            DropdownMenu(
+                                expanded = weightExpanded,
+                                onDismissRequest = { weightExpanded = false }
+                            ) {
+                                wholesaleWeights.forEach { weight ->
+                                    DropdownMenuItem(
+                                        text = { Text("$weight kg") },
+                                        onClick = {
+                                            jumlah = weight.toString()
+                                            weightExpanded = false
+                                        }
+                                    )
+                                }
                             }
+                            Spacer(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { weightExpanded = true }
+                            )
+                        }
+                    } else {
+                        OutlinedTextField(
+                            value = jumlah,
+                            onValueChange = { jumlah = it },
+                            label = { Text(inputKgLabel) },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
                     }
                 }
-                Spacer(modifier = Modifier
-                    .matchParentSize()
-                    .clickable { weightExpanded = true })
             }
-        } else {
-            OutlinedTextField(
-                value = jumlah,
-                onValueChange = { jumlah = it },
-                label = { Text(inputKgLabel) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-        }
 
-        // Update button
-        Button(
-            onClick = {
-                if (nama.isBlank()) {
-                    errorMessage = buyerNameError
-                    return@Button
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        if (nama.isBlank()) {
+                            errorMessage = buyerNameError
+                            return@Button
+                        }
+                        if (alamat.isBlank()) {
+                            errorMessage = buyerAddressError
+                            return@Button
+                        }
+                        if (jenis.isBlank()) {
+                            errorMessage = selectPurchaseTypeError
+                            return@Button
+                        }
+                        val jumlahInt = jumlah.toIntOrNull()
+                        if (jumlahInt == null || jumlahInt <= 0) {
+                            errorMessage = invalidError
+                            return@Button
+                        }
+
+                        val totalHarga = if (jenis == retailValue) jumlahInt * 25000
+                        else (jumlahInt / 15) * 330000
+
+                        val updated = Pemesanan(
+                            id = id,
+                            nama = nama,
+                            alamat = alamat,
+                            jenis = jenis,
+                            jumlahKg = jumlahInt,
+                            totalHarga = totalHarga
+                        )
+
+                        scope.launch {
+                            viewModel.updatePemesanan(updated)
+                            navController.popBackStack()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(updateButtonText)
                 }
-                if (alamat.isBlank()) {
-                    errorMessage = buyerAddressError
-                    return@Button
+
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(deleteButtonText)
                 }
-                if (jenis.isBlank()) {
-                    errorMessage = selectPurchaseTypeError
-                    return@Button
-                }
-                val jumlahInt = jumlah.toIntOrNull()
-                if (jumlahInt == null || jumlahInt <= 0) {
-                    errorMessage = invalidError
-                    return@Button
-                }
-
-                val totalHarga = if (jenis == retailValue) jumlahInt * 25000
-                else (jumlahInt / 15) * 330000
-
-                val updated = Pemesanan(
-                    id = id,
-                    nama = nama,
-                    alamat = alamat,
-                    jenis = jenis,
-                    jumlahKg = jumlahInt,
-                    totalHarga = totalHarga
-                )
-
-                scope.launch {
-                    viewModel.updatePemesanan(updated)
-                    navController.popBackStack()
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(updateButtonText)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Delete button
-        Button(
-            onClick = { showDeleteDialog = true },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Text(deleteButtonText)
+            }
         }
     }
 }

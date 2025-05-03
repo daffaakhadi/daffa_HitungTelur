@@ -61,7 +61,18 @@
     <string name="cancel">Cancel</string>
     <string name="confirm_delete">Yes, Delete</string>
     <string name="welcome_title">Welcome to the Egg Counting App</string>
-    <string name="welcome_subtitle">Counting and Ordering eggs will be easy through this application</string>
-    <string name="masuk">Enter</string>
     <string name="keluar">Exit</string>
+    <string name="welcome_subtitle">Please login or register to continue</string>
+    <string name="daftar">Register</string>
+    <string name="login">Login</string>
+    <string name="info_aplikasi">Info Aplikasi</string>
+    <string name="faq_question_1">What is the Egg Counting app?</string>
+    <string name="faq_answer_1">Egg Count is an application used to record and calculate egg orders, both wholesale and retail.</string>
+    <string name="faq_question_2">Who can use this app?</string>
+    <string name="faq_answer_2">This application can be used by egg sellers or users who want to record egg purchase and sales transactions easily.</string>
+    <string name="faq_question_3">Is my data safe?</string>
+    <string name="faq_answer_3">Data is stored locally on the device using Room Database and is not sent to external servers.</string>
+    <string name="buat_transaksi_keuangan">Financial Transactions</string>
+    <string name="fitur_dalam_pengembangan">This feature is under development.</string>
+
 </resources>

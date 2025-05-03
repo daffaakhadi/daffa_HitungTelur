@@ -64,6 +64,14 @@ fun MainScreen(navController: NavHostController) {
                             }
                         )
                         DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.buat_transaksi_keuangan)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("keuangan")
+                            }
+                        )
+
+                        DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.keluar)) },
                             onClick = {
                                 expanded = false

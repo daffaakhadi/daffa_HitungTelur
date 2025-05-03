@@ -31,7 +31,7 @@
     <string name="buyer_address_error">Alamat pembeli tidak boleh kosong!</string>
     <string name="menu_list_pemesanan">List Pemesanan Telur</string>
     <string name="list_pemesanan_title">Pemesanan Telur</string>
-    <string name="back">Back</string>
+    <string name="back">Kembali</string>
     <string name="list_pemesanan_empty">Halaman list pemesanan telur (belum ada data).</string>
     <string name="select">Pilihan</string>
     <string name="select_purchase_type_error">Silakan pilih jenis pembelian terlebih dahulu</string>
@@ -61,9 +61,18 @@
     <string name="delete_confirmation_message">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="cancel">Batal</string>
     <string name="confirm_delete">Ya, Hapus</string>
-    <string name="welcome_title">Selamat datang di aplikasi Hitung Telur</string>
-    <string name="welcome_subtitle">Hitung dan Pemesanan telur akan mudah melalui aplikasi ini</string>
-    <string name="masuk">Masuk</string>
+    <string name="welcome_title">Selamat Datang</string>
     <string name="keluar">Keluar</string>
-
+    <string name="welcome_subtitle">Silakan masuk atau daftar untuk melanjutkan</string>
+    <string name="daftar">Daftar</string>
+    <string name="login">Login</string>
+    <string name="info_aplikasi">Info Aplikasi</string>
+    <string name="buat_transaksi_keuangan">Transaksi Keuangan</string>
+    <string name="faq_question_1">Apa itu aplikasi Hitung Telur?</string>
+    <string name="faq_answer_1">Hitung Telur adalah aplikasi yang digunakan untuk mencatat dan menghitung pemesanan telur, baik secara grosir maupun eceran.</string>
+    <string name="faq_question_2">Siapa yang dapat menggunakan aplikasi ini?</string>
+    <string name="faq_answer_2">Aplikasi ini dapat digunakan oleh penjual telur atau pengguna yang ingin mencatat transaksi pembelian dan penjualan telur dengan mudah.</string>
+    <string name="faq_question_3">Apakah data saya aman?</string>
+    <string name="faq_answer_3">Data disimpan secara lokal di perangkat menggunakan Room Database dan tidak dikirim ke server eksternal.</string>
+    <string name="fitur_dalam_pengembangan">Fitur ini sedang dalam pengembangan.</string>
 </resources>
