@@ -61,7 +61,7 @@
     <string name="delete_confirmation_message">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</string>
     <string name="cancel">Batal</string>
     <string name="confirm_delete">Ya, Hapus</string>
-    <string name="welcome_title">Selamat Datang</string>
+    <string name="welcome_title">Selamat Datang di Aplikasi Hitung Telur</string>
     <string name="keluar">Keluar</string>
     <string name="welcome_subtitle">Silakan masuk atau daftar untuk melanjutkan</string>
     <string name="daftar">Daftar</string>
@@ -75,4 +75,7 @@
     <string name="faq_question_3">Apakah data saya aman?</string>
     <string name="faq_answer_3">Data disimpan secara lokal di perangkat menggunakan Room Database dan tidak dikirim ke server eksternal.</string>
     <string name="fitur_dalam_pengembangan">Fitur ini sedang dalam pengembangan.</string>
+    <string name="dialog_exit_message">Apakah Anda yakin ingin keluar?</string>
+    <string name="yes">Iya</string>
+    <string name="count_egg">Hitung Telur</string>
 </resources>

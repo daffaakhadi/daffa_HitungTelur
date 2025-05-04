@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.res.Configuration.*
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -22,6 +23,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.daffa0050.assesment1.AssesmentApp
@@ -35,16 +38,56 @@ fun MainScreen(navController: NavHostController) {
     val context = LocalContext.current.applicationContext as Application
     val viewModel: PemesananViewModel = viewModel(factory = AppViewModelProvider(context))
 
+    var expanded by remember { mutableStateOf(false) }
+    var selectedColor by remember { mutableStateOf(Color(0xFFD7A86E)) } // Warna default
+    var showDialog by remember { mutableStateOf(false) } // Untuk menampilkan dialog konfirmasi
+
+    val colorThemes = mapOf(
+        "Coklat" to Color(0xFFD7A86E),
+        "Merah" to Color(0xFFD32F2F),
+        "Hijau" to Color(0xFF388E3C),
+        "Biru" to Color(0xFF1976D2)
+    )
+
+    // Menampilkan dialog konfirmasi keluar
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = stringResource(id = R.string.keluar)) },
+            text = { Text(text = stringResource(id = R.string.dialog_exit_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                        navController.navigate("welcome") {
+                            popUpTo("welcome") { inclusive = true }
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.yes))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.app_name)) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFD7A86E),
+                    containerColor = selectedColor,
                     titleContentColor = Color.White
                 ),
                 actions = {
-                    var expanded by remember { mutableStateOf(false) }
                     IconButton(onClick = { expanded = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Menu")
                     }
@@ -70,16 +113,40 @@ fun MainScreen(navController: NavHostController) {
                                 navController.navigate("keuangan")
                             }
                         )
-
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.keluar)) },
                             onClick = {
                                 expanded = false
-                                navController.navigate("welcome") {
-                                    popUpTo("welcome") { inclusive = true }
-                                }
+                                showDialog = true
                             }
                         )
+                        HorizontalDivider()
+                        Text(
+                            text = "Ganti Tema Warna",
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            fontWeight = FontWeight.Bold
+                        )
+                        colorThemes.forEach { (name, color) ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_color_lens_24),
+                                            contentDescription = null,
+                                            tint = color,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(name)
+                                    }
+                                },
+                                onClick = {
+                                    selectedColor = color
+                                    expanded = false
+                                },
+                                modifier = Modifier.background(if (color == selectedColor) Color.LightGray else Color.Transparent)
+                            )
+                        }
                     }
                 }
             )

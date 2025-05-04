@@ -74,5 +74,8 @@
     <string name="faq_answer_3">Data is stored locally on the device using Room Database and is not sent to external servers.</string>
     <string name="buat_transaksi_keuangan">Financial Transactions</string>
     <string name="fitur_dalam_pengembangan">This feature is under development.</string>
+    <string name="dialog_exit_message">Are you sure you want to exit?</string>
+    <string name="yes">Yes</string>
+    <string name="count_egg">Count Egg</string>
 
 </resources>

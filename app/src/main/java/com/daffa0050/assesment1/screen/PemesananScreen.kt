@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +57,8 @@ fun ListPemesananScreen(
     val totalGrosir by viewModel.totalGrosir.collectAsState()
     val context = LocalContext.current
 
+    var expanded by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,6 +87,36 @@ fun ListPemesananScreen(
                                 else R.string.list
                             ),
                             tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                    }
+
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.read_article)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("news")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.buat_transaksi_keuangan)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("keuangan")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.keluar)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("welcome") {
+                                    popUpTo("welcome") { inclusive = true }
+                                }
+                            }
                         )
                     }
                 },

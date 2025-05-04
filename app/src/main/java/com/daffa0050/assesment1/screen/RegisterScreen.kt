@@ -77,7 +77,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
                             navController.navigate("login")
                             "Pendaftaran berhasil!"
                         } else {
-                            "Username sudah terdaftar"
+                            "Username/Password tidak boleh kosong"
                         }
                     },
                     modifier = Modifier

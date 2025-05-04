@@ -5,8 +5,13 @@ import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +31,7 @@ fun NewsScreen(navController: NavHostController) {
         context.getString(R.string.article_4) to "https://www.dapurumami.com/artikel-tips/perbedaan-telur-ayam-kampung-dan-telur-ayam-negeri"
     )
 
+    var expanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -36,8 +42,49 @@ fun NewsScreen(navController: NavHostController) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
+                actions = {
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.count_egg)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("home")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.buat_transaksi_keuangan)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("keuangan")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.list_pemesanan_title)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("list_pemesanan")
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.keluar)) },
+                            onClick = {
+                                expanded = false
+                                navController.navigate("welcome") {
+                                    popUpTo("welcome") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFD7A86E), // Warna sama seperti MainScreen
+                    containerColor = Color(0xFFD7A86E),
                     titleContentColor = Color.White
                 )
             )
@@ -71,4 +118,5 @@ fun NewsScreen(navController: NavHostController) {
         }
     }
 }
+
 
