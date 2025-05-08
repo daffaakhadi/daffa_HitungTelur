@@ -26,30 +26,98 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.daffa0050.assesment1.AssesmentApp
 import com.daffa0050.assesment1.model.Pemesanan
 import com.daffa0050.assesment1.model.PemesananViewModel
 import com.daffa0050.assesment1.model.AppViewModelProvider
+import com.daffa0050.assesment1.util.ColorManager
+
+import kotlinx.coroutines.launch
+
+object PreferenceKeys {
+    val THEME_COLOR = stringPreferencesKey("theme_color")
+}
+
+// Define a custom color scheme provider
+data class AppColorScheme(
+    val primary: Color,
+    val primaryContainer: Color,
+    val onPrimary: Color,
+    val secondary: Color,
+    val background: Color,
+    val surface: Color,
+    val onSurface: Color,
+    val onPrimaryContainer: Color,
+    val error: Color,
+    val onError: Color
+)
+
+val colorThemes = mapOf(
+    "Coklat" to AppColorScheme(
+        primary = Color(0xFFD7A86E),
+        primaryContainer = Color(0xFFEFDCC9),
+        onPrimary = Color.White,
+        secondary = Color(0xFFB08E59),
+        background = Color.White,
+        surface = Color.White,
+        onSurface = Color.Black,
+        onPrimaryContainer = Color(0xFF553E1F),
+        error = Color(0xFFB3261E),
+        onError = Color.White
+    ),
+    "Merah" to AppColorScheme(
+        primary = Color(0xFFD32F2F),
+        primaryContainer = Color(0xFFFFDAD6),
+        onPrimary = Color.White,
+        secondary = Color(0xFFB71C1C),
+        background = Color.White,
+        surface = Color.White,
+        onSurface = Color.Black,
+        onPrimaryContainer = Color(0xFF410002),
+        error = Color(0xFFB3261E),
+        onError = Color.White
+    ),
+    "Hijau" to AppColorScheme(
+        primary = Color(0xFF388E3C),
+        primaryContainer = Color(0xFFADDAAF),
+        onPrimary = Color.White,
+        secondary = Color(0xFF1B5E20),
+        background = Color.White,
+        surface = Color.White,
+        onSurface = Color.Black,
+        onPrimaryContainer = Color(0xFF00210B),
+        error = Color(0xFFB3261E),
+        onError = Color.White
+    ),
+    "Biru" to AppColorScheme(
+        primary = Color(0xFF1976D2),
+        primaryContainer = Color(0xFFD4E3FF),
+        onPrimary = Color.White,
+        secondary = Color(0xFF0D47A1),
+        background = Color.White,
+        surface = Color.White,
+        onSurface = Color.Black,
+        onPrimaryContainer = Color(0xFF001A41),
+        error = Color(0xFFB3261E),
+        onError = Color.White
+    )
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavHostController) {
     val context = LocalContext.current.applicationContext as Application
     val viewModel: PemesananViewModel = viewModel(factory = AppViewModelProvider(context))
+    val colorManager = remember { ColorManager(context) }
+    val scope = rememberCoroutineScope()
 
+    val currentThemeName = colorManager.themeColor.collectAsState(initial = "Coklat").value
     var expanded by remember { mutableStateOf(false) }
-    var selectedColor by remember { mutableStateOf(Color(0xFFD7A86E)) } // Warna default
-    var showDialog by remember { mutableStateOf(false) } // Untuk menampilkan dialog konfirmasi
+    var showDialog by remember { mutableStateOf(false) }
+    val currentColorScheme = colorThemes[currentThemeName] ?: colorThemes["Coklat"]!!
 
-    val colorThemes = mapOf(
-        "Coklat" to Color(0xFFD7A86E),
-        "Merah" to Color(0xFFD32F2F),
-        "Hijau" to Color(0xFF388E3C),
-        "Biru" to Color(0xFF1976D2)
-    )
-
-    // Menampilkan dialog konfirmasi keluar
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -64,7 +132,10 @@ fun MainScreen(navController: NavHostController) {
                         }
                     }
                 ) {
-                    Text(text = stringResource(id = R.string.yes))
+                    Text(
+                        text = stringResource(id = R.string.yes),
+                        color = currentColorScheme.primary
+                    )
                 }
             },
             dismissButton = {
@@ -73,9 +144,15 @@ fun MainScreen(navController: NavHostController) {
                         showDialog = false
                     }
                 ) {
-                    Text(text = stringResource(id = R.string.cancel))
+                    Text(
+                        text = stringResource(id = R.string.cancel),
+                        color = currentColorScheme.primary
+                    )
                 }
-            }
+            },
+            containerColor = currentColorScheme.surface,
+            titleContentColor = currentColorScheme.onSurface,
+            textContentColor = currentColorScheme.onSurface
         )
     }
 
@@ -84,14 +161,21 @@ fun MainScreen(navController: NavHostController) {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.app_name)) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = selectedColor,
-                    titleContentColor = Color.White
+                    containerColor = currentColorScheme.primary,
+                    titleContentColor = currentColorScheme.onPrimary
                 ),
                 actions = {
                     IconButton(onClick = { expanded = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = "Menu",
+                            tint = currentColorScheme.onPrimary
+                        )
                     }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.menu_list_pemesanan)) },
                             onClick = {
@@ -126,14 +210,14 @@ fun MainScreen(navController: NavHostController) {
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                             fontWeight = FontWeight.Bold
                         )
-                        colorThemes.forEach { (name, color) ->
+                        colorThemes.forEach { (name, colorScheme) ->
                             DropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
                                             painter = painterResource(id = R.drawable.baseline_color_lens_24),
                                             contentDescription = null,
-                                            tint = color,
+                                            tint = colorScheme.primary,
                                             modifier = Modifier.size(24.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -141,10 +225,14 @@ fun MainScreen(navController: NavHostController) {
                                     }
                                 },
                                 onClick = {
-                                    selectedColor = color
+                                    scope.launch {
+                                        colorManager.saveThemePreference(name)
+                                    }
                                     expanded = false
                                 },
-                                modifier = Modifier.background(if (color == selectedColor) Color.LightGray else Color.Transparent)
+                                modifier = Modifier.background(
+                                    if (name == currentThemeName) Color.LightGray else Color.Transparent
+                                )
                             )
                         }
                     }
@@ -154,7 +242,8 @@ fun MainScreen(navController: NavHostController) {
     ) { innerPadding ->
         ScreenContent(
             modifier = Modifier.padding(innerPadding),
-            viewModel = viewModel
+            viewModel = viewModel,
+            colorScheme = currentColorScheme
         )
     }
 }
@@ -163,7 +252,8 @@ fun MainScreen(navController: NavHostController) {
 @Composable
 fun ScreenContent(
     modifier: Modifier = Modifier,
-    viewModel: PemesananViewModel
+    viewModel: PemesananViewModel,
+    colorScheme: AppColorScheme
 ) {
     val context = LocalContext.current
     val retailLabel = stringResource(R.string.retail)
@@ -191,7 +281,6 @@ fun ScreenContent(
     var expandedJenis by remember { mutableStateOf(false) }
     var expandedGrosir by remember { mutableStateOf(false) }
     var showShareButton by rememberSaveable { mutableStateOf(false) }
-
 
     LaunchedEffect(kg, grosirKg, jenisPembelian) {
         totalBayar = when {
@@ -228,9 +317,14 @@ fun ScreenContent(
             isError = namaPembeliError.isNotEmpty(),
             supportingText = {
                 if (namaPembeliError.isNotEmpty()) {
-                    Text(text = namaPembeliError, color = MaterialTheme.colorScheme.error)
+                    Text(text = namaPembeliError, color = colorScheme.error)
                 }
-            }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorScheme.primary,
+                focusedLabelColor = colorScheme.primary,
+                cursorColor = colorScheme.primary
+            )
         )
 
         Spacer(Modifier.height(8.dp))
@@ -246,9 +340,14 @@ fun ScreenContent(
             isError = alamatPembeliError.isNotEmpty(),
             supportingText = {
                 if (alamatPembeliError.isNotEmpty()) {
-                    Text(text = alamatPembeliError, color = MaterialTheme.colorScheme.error)
+                    Text(text = alamatPembeliError, color = colorScheme.error)
                 }
-            }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorScheme.primary,
+                focusedLabelColor = colorScheme.primary,
+                cursorColor = colorScheme.primary
+            )
         )
 
         Spacer(Modifier.height(8.dp))
@@ -259,10 +358,19 @@ fun ScreenContent(
                 value = jenisPembelian,
                 onValueChange = {},
                 label = { Text(stringResource(R.string.jenis_pembelian)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJenis) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expandedJenis
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
+                    .menuAnchor(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorScheme.primary,
+                    focusedLabelColor = colorScheme.primary,
+                    unfocusedBorderColor = colorScheme.primary.copy(alpha = 0.5f)
+                )
             )
             ExposedDropdownMenu(expanded = expandedJenis, onDismissRequest = { expandedJenis = false }) {
                 jenisOptions.forEach { option ->
@@ -302,7 +410,8 @@ fun ScreenContent(
                     stringResource(id = R.string.current_price_grosir, grosirHargaPer15Kg)
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 4.dp),
+                color = colorScheme.primary
             )
 
         }
@@ -320,9 +429,14 @@ fun ScreenContent(
                 isError = errorMessage.isNotEmpty(),
                 supportingText = {
                     if (errorMessage.isNotEmpty()) {
-                        Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                        Text(text = errorMessage, color = colorScheme.error)
                     }
-                }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorScheme.primary,
+                    focusedLabelColor = colorScheme.primary,
+                    cursorColor = colorScheme.primary
+                )
             )
         } else if (jenisPembelian == wholesaleLabel) {
             ExposedDropdownMenuBox(expanded = expandedGrosir, onExpandedChange = { expandedGrosir = !expandedGrosir }) {
@@ -331,10 +445,19 @@ fun ScreenContent(
                     value = grosirKg,
                     onValueChange = {},
                     label = { Text(stringResource(R.string.select_wholesale_package)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGrosir) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = expandedGrosir
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor()
+                        .menuAnchor(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colorScheme.primary,
+                        focusedLabelColor = colorScheme.primary,
+                        unfocusedBorderColor = colorScheme.primary.copy(alpha = 0.5f)
+                    )
                 )
                 ExposedDropdownMenu(expanded = expandedGrosir, onDismissRequest = { expandedGrosir = false }) {
                     grosirOptions.forEach { kgOption ->
@@ -352,10 +475,9 @@ fun ScreenContent(
 
         Spacer(Modifier.height(12.dp))
 
-        // Menampilkan total pembayaran dengan tampilan yang menonjol
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+                containerColor = colorScheme.primaryContainer
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -366,11 +488,13 @@ fun ScreenContent(
             ) {
                 Text(
                     text = stringResource(R.string.result),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colorScheme.onPrimaryContainer
                 )
                 Text(
                     text = "Rp $totalBayar",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = colorScheme.onPrimaryContainer
                 )
             }
         }
@@ -429,7 +553,13 @@ fun ScreenContent(
                 }
             },
             enabled = jenisPembelian != selectLabel && totalBayar > 0,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary,
+                disabledContainerColor = colorScheme.primary.copy(alpha = 0.5f),
+                disabledContentColor = colorScheme.onPrimary.copy(alpha = 0.5f)
+            )
         ) {
             Text(stringResource(R.string.calculate))
         }
