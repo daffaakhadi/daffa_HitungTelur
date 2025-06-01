@@ -73,6 +73,30 @@ fun WelcomeScreen(navController: NavController) {
                 )
             }
 
+            // Tombol Login dengan Google
+            Button(
+                onClick = {
+                    // Arahkan ke fungsi login Google (implementasi disesuaikan)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth(),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.search), // Ganti dengan ID ikon Google kamu
+                    contentDescription = "Google Icon",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Login with Google",
+                    color = Color.Black,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
             Button(
                 onClick = { navController.navigate("register") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
