@@ -8,19 +8,20 @@ class AuthViewModel : ViewModel() {
 
     private var currentUser: User? = null
 
-    fun register(username: String, password: String): Boolean {
-        if (username.isBlank() || password.isBlank()) return false
-        if (registeredUsers.any { it.username == username }) return false
-        registeredUsers.add(User(username, password))
+    fun register(email: String, password: String): Boolean {
+        if (email.isBlank() || password.isBlank()) return false
+        if (registeredUsers.any { it.email == email }) return false
+        registeredUsers.add(User(email, password))
         return true
     }
 
-    fun login(username: String, password: String): Boolean {
-        if (username.isBlank() || password.isBlank()) return false
-        val user = registeredUsers.find { it.username == username && it.password == password }
+    fun login(email: String, password: String): Boolean {
+        if (email.isBlank() || password.isBlank()) return false
+        val user = registeredUsers.find { it.email == email && it.password == password }
         return if (user != null) {
             currentUser = user
             true
         } else false
     }
+
 }

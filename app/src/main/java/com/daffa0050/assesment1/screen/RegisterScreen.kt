@@ -19,7 +19,7 @@ import com.daffa0050.assesment1.model.AuthViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
@@ -54,9 +54,9 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    label = { Text("Username") },
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -72,12 +72,12 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
 
                 Button(
                     onClick = {
-                        val success = authViewModel.register(username, password)
+                        val success = authViewModel.register(email, password)
                         message = if (success) {
                             navController.navigate("login")
                             "Pendaftaran berhasil!"
                         } else {
-                            "Username/Password tidak boleh kosong"
+                            "Email/Password tidak boleh kosong"
                         }
                     },
                     modifier = Modifier
@@ -113,3 +113,4 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
         }
     }
 }
+
