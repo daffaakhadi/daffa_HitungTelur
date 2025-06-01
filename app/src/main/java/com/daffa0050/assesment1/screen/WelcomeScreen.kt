@@ -1,5 +1,6 @@
 package com.daffa0050.assesment1.screen
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,9 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.daffa0050.assesment1.R
+import com.daffa0050.assesment1.util.SettingsDataStore
+import kotlinx.coroutines.launch
 
 @Composable
-fun WelcomeScreen(navController: NavController) {
+fun WelcomeScreen(navController: NavController, context: Context,
+                  dataStore: SettingsDataStore
+) {
+    val scope = rememberCoroutineScope()
     val mainColor = Color(0xFFD7A86E)
     val white = Color.White
 
@@ -85,17 +92,19 @@ fun WelcomeScreen(navController: NavController) {
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            // Tombol Login dengan Google
             Button(
                 onClick = {
-                    // Arahkan ke fungsi login Google (implementasi disesuaikan)
+                    scope.launch {
+                        signIn(context, dataStore)
+                        navController.navigate("home") // Arahkan ke halaman utama setelah login berhasil
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 modifier = Modifier.fillMaxWidth(),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.search), // Ganti dengan ID ikon Google kamu
+                    painter = painterResource(id = R.drawable.search), // Ganti dengan ikon Google
                     contentDescription = "Google Icon",
                     tint = Color.Unspecified,
                     modifier = Modifier.size(20.dp)
@@ -108,6 +117,7 @@ fun WelcomeScreen(navController: NavController) {
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
 
             // Tombol Info Aplikasi
             Button(

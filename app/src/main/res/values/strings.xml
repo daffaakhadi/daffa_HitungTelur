@@ -77,5 +77,8 @@
     <string name="dialog_exit_message">Are you sure you want to exit?</string>
     <string name="yes">Yes</string>
     <string name="count_egg">Count Egg</string>
+    <string name="profil">Profil</string>
+    <string name="logout">Logout</string>
+    <string name="tutup">Close</string>
 
 </resources>

@@ -9,13 +9,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.daffa0050.assesment1.model.AuthViewModel
 import com.daffa0050.assesment1.screen.*
+import com.daffa0050.assesment1.util.SettingsDataStore
 
 @Composable
 fun NavGraph(navController: NavHostController) {
     val authViewModel: AuthViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = "welcome") {
-        composable("welcome") { WelcomeScreen(navController) }
+        composable("welcome") {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val dataStore = SettingsDataStore(context)
+            WelcomeScreen(
+                navController = navController,
+                context = context,
+                dataStore = dataStore
+            )
+        }
+
         composable("home") { MainScreen(navController) }
         composable("main") { MainScreen(navController) }
         composable("news") { NewsScreen(navController) }

@@ -78,4 +78,8 @@
     <string name="dialog_exit_message">Apakah Anda yakin ingin keluar?</string>
     <string name="yes">Iya</string>
     <string name="count_egg">Hitung Telur</string>
+    <string name="profil">Profil</string>
+    <string name="logout">Logout</string>
+    <string name="tutup">Tutup</string>
+
 </resources>

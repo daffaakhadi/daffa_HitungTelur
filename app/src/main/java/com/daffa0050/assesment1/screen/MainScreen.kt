@@ -1,7 +1,10 @@
 package com.daffa0050.assesment1.screen
 
 import android.app.Application
+import android.content.Context
 import android.content.res.Configuration.*
+import androidx.credentials.CredentialManager
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,20 +24,37 @@ import androidx.navigation.NavHostController
 import com.daffa0050.assesment1.R
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CustomCredential
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.daffa0050.assesment1.AssesmentApp
+import com.daffa0050.assesment1.BuildConfig
 import com.daffa0050.assesment1.model.Pemesanan
 import com.daffa0050.assesment1.model.PemesananViewModel
 import com.daffa0050.assesment1.model.AppViewModelProvider
 import com.daffa0050.assesment1.util.ColorManager
-
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.ClearCredentialException
+import androidx.credentials.exceptions.GetCredentialException
+import coil.compose.rememberAsyncImagePainter
+import com.daffa0050.assesment1.model.UserData
+import com.daffa0050.assesment1.util.SettingsDataStore
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
 
 object PreferenceKeys {
     val THEME_COLOR = stringPreferencesKey("theme_color")
@@ -111,6 +131,9 @@ fun MainScreen(navController: NavHostController) {
     val viewModel: PemesananViewModel = viewModel(factory = AppViewModelProvider(context))
     val colorManager = remember { ColorManager(context) }
     val scope = rememberCoroutineScope()
+    val dataStore = SettingsDataStore(context)
+    val userData by dataStore.userFlow.collectAsState(UserData())
+    var profilDialog by remember { mutableStateOf(false) }
 
     val currentThemeName = colorManager.themeColor.collectAsState(initial = "Coklat").value
     var expanded by remember { mutableStateOf(false) }
@@ -139,9 +162,7 @@ fun MainScreen(navController: NavHostController) {
             },
             dismissButton = {
                 TextButton(
-                    onClick = {
-                        showDialog = false
-                    }
+                    onClick = { showDialog = false }
                 ) {
                     Text(
                         text = stringResource(id = R.string.cancel),
@@ -171,6 +192,24 @@ fun MainScreen(navController: NavHostController) {
                             tint = currentColorScheme.onPrimary
                         )
                     }
+                    IconButton(
+                        onClick = {
+                            if (userData.email.isEmpty()) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    signIn(context, dataStore)
+                                }
+                            } else {
+                                profilDialog = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_account_circle_24),
+                            contentDescription = stringResource(R.string.profil),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
@@ -245,7 +284,41 @@ fun MainScreen(navController: NavHostController) {
             colorScheme = currentColorScheme
         )
     }
+
+    // 💬 Profil Dialog muncul di tengah
+    if (profilDialog) {
+        AlertDialog(
+            onDismissRequest = { profilDialog = false },
+            title = { Text(text = stringResource(id = R.string.profil)) },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(userData.photoUrl),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(userData.name, fontWeight = FontWeight.Bold)
+                    Text(userData.email)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { profilDialog = false }) {
+                    Text("Tutup", color = currentColorScheme.primary)
+                }
+            },
+            containerColor = currentColorScheme.surface,
+            titleContentColor = currentColorScheme.onSurface,
+            textContentColor = currentColorScheme.onSurface
+        )
+    }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -564,6 +637,52 @@ fun ScreenContent(
         }
 
         Spacer(Modifier.height(12.dp))
+    }
+}
+suspend fun signIn(context: Context, dataStore: SettingsDataStore) {
+    val googleOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+        .setFilterByAuthorizedAccounts(false)
+        .setServerClientId(BuildConfig.API_KEY)
+        .build()
+
+    val request: GetCredentialRequest = GetCredentialRequest.Builder()
+        .addCredentialOption(googleOption)
+        .build()
+
+    try {
+        val credentialManager = CredentialManager.create(context)
+        val result = credentialManager.getCredential(context, request)
+        handleSignIn(result, dataStore)
+    } catch (e: GetCredentialException) {
+        Log.e("SIGN-IN", "Error: ${e.errorMessage}")
+    }
+}
+suspend fun signOut(context: Context, dataStore: SettingsDataStore) {
+    try {
+        val credentialManager = CredentialManager.create(context)
+        credentialManager.clearCredentialState(
+            ClearCredentialStateRequest()
+        )
+        dataStore.saveData(UserData())
+    } catch (e: ClearCredentialException){
+        Log.e("SIGN-IN", "Error: ${e.errorMessage}")
+    }
+}
+suspend fun handleSignIn(result: GetCredentialResponse, dataStore: SettingsDataStore) {
+    val credential = result.credential
+    if (credential is CustomCredential &&
+        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+        try {
+            val googleId = GoogleIdTokenCredential.createFrom(credential.data)
+            val nama = googleId.displayName ?: ""
+            val email = googleId.id
+            val photoUrl = googleId.profilePictureUri.toString()
+            dataStore.saveData(UserData(nama, email, photoUrl))
+        } catch (e: GoogleIdTokenParsingException) {
+            Log.e("SIGN-IN", "Error: ${e.message}")
+        }
+    } else {
+        Log.e("SIGN-IN", "Error: unrecognized custom credential type.")
     }
 }
 
