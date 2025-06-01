@@ -73,6 +73,18 @@ fun WelcomeScreen(navController: NavController) {
                 )
             }
 
+            Button(
+                onClick = { navController.navigate("register") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(id = R.string.daftar),
+                    color = mainColor,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
             // Tombol Login dengan Google
             Button(
                 onClick = {
@@ -92,19 +104,6 @@ fun WelcomeScreen(navController: NavController) {
                 Text(
                     text = "Login with Google",
                     color = Color.Black,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Button(
-                onClick = { navController.navigate("register") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(id = R.string.daftar),
-                    color = mainColor,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold
                 )
