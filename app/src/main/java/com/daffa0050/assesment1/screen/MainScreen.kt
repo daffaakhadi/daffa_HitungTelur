@@ -40,7 +40,6 @@ object PreferenceKeys {
     val THEME_COLOR = stringPreferencesKey("theme_color")
 }
 
-// Define a custom color scheme provider
 data class AppColorScheme(
     val primary: Color,
     val primaryContainer: Color,
