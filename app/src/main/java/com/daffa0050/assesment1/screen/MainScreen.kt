@@ -657,17 +657,6 @@ suspend fun signIn(context: Context, dataStore: SettingsDataStore) {
         Log.e("SIGN-IN", "Error: ${e.errorMessage}")
     }
 }
-suspend fun signOut(context: Context, dataStore: SettingsDataStore) {
-    try {
-        val credentialManager = CredentialManager.create(context)
-        credentialManager.clearCredentialState(
-            ClearCredentialStateRequest()
-        )
-        dataStore.saveData(UserData())
-    } catch (e: ClearCredentialException){
-        Log.e("SIGN-IN", "Error: ${e.errorMessage}")
-    }
-}
 suspend fun handleSignIn(result: GetCredentialResponse, dataStore: SettingsDataStore) {
     val credential = result.credential
     if (credential is CustomCredential &&
