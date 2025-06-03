@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.daffa0050.assesment1.model.Pemesanan
 import kotlinx.coroutines.flow.Flow
 
@@ -15,10 +16,13 @@ interface PemesananDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(pemesanan: Pemesanan)
 
-    @Query("SELECT SUM(totalHarga) FROM pemesanan WHERE jenis = 'eceran'")
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(data: List<Pemesanan>)
+
+    @Query("SELECT SUM(total) FROM pemesanan WHERE purchaseType = 'Eceran'")
     fun getTotalEceran(): Flow<Int?>
 
-    @Query("SELECT SUM(totalHarga) FROM pemesanan WHERE jenis = 'grosir'")
+    @Query("SELECT SUM(total) FROM pemesanan WHERE purchaseType = 'Grosir'")
     fun getTotalGrosir(): Flow<Int?>
 
     @Query("SELECT * FROM pemesanan WHERE id = :id")
@@ -27,6 +31,8 @@ interface PemesananDao {
     @Query("DELETE FROM pemesanan WHERE id = :id")
     suspend fun deletePemesanan(id: Int)
 
-    @androidx.room.Update
+    @Update
     suspend fun updatePemesanan(pemesanan: Pemesanan)
+
 }
+

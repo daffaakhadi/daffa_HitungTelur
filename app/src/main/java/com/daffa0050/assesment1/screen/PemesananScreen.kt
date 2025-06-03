@@ -184,22 +184,22 @@ private fun PemesananItem(
         colors = CardDefaults.cardColors()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = stringResource(id = R.string.label_nama, item.nama))
-            Text(text = stringResource(id = R.string.label_alamat, item.alamat))
-            Text(text = stringResource(id = R.string.label_jenis, item.jenis))
-            Text(text = stringResource(id = R.string.label_jumlah, item.jumlahKg))
-            Text(text = stringResource(id = R.string.label_total_harga, item.totalHarga))
+            Text(text = stringResource(id = R.string.label_nama, item.customerName))
+            Text(text = stringResource(id = R.string.label_alamat, item.customerAddress))
+            Text(text = stringResource(id = R.string.label_jenis, item.purchaseType))
+            Text(text = stringResource(id = R.string.label_jumlah, item.amount))
+            Text(text = stringResource(id = R.string.label_total_harga, item.total))
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(onClick = {
                 val shareText = context.getString(
                     R.string.share_text,
-                    item.nama,
-                    item.alamat,
-                    item.jenis,
-                    item.jumlahKg,
-                    item.totalHarga.toString()
+                    item.customerName,
+                    item.customerAddress,
+                    item.purchaseType,
+                    item.amount,
+                    item.total.toString()
                 )
                 val intent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
@@ -267,10 +267,10 @@ fun EditPemesananScreen(
 
     LaunchedEffect(pemesanan) {
         pemesanan?.let {
-            nama = it.nama
-            alamat = it.alamat
-            jenis = it.jenis
-            jumlah = it.jumlahKg.toString()
+            nama = it.customerName
+            alamat = it.customerAddress
+            jenis = it.purchaseType
+            jumlah = it.amount.toString()
         }
     }
 
@@ -459,11 +459,11 @@ fun EditPemesananScreen(
 
                         val updated = Pemesanan(
                             id = id,
-                            nama = nama,
-                            alamat = alamat,
-                            jenis = jenis,
-                            jumlahKg = jumlahInt,
-                            totalHarga = totalHarga
+                            customerName = nama,
+                            customerAddress = alamat,
+                            purchaseType = jenis,
+                            amount = jumlahInt,
+                            total = totalHarga
                         )
 
                         scope.launch {

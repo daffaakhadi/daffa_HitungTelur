@@ -596,14 +596,14 @@ fun ScreenContent(
                     }
 
                     val pemesanan = Pemesanan(
-                        nama = namaPembeli,
-                        alamat = alamatPembeli,
-                        jenis = if (jenisPembelian == retailLabel)
+                        customerName = namaPembeli,
+                        customerAddress = alamatPembeli,
+                        purchaseType = if (jenisPembelian == retailLabel)
                             "Eceran"
                         else
                             "Grosir",
-                        jumlahKg = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
-                        totalHarga = totalBayar
+                        amount = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
+                        total = totalBayar
                     )
                     viewModel.tambahPemesanan(pemesanan)
 
