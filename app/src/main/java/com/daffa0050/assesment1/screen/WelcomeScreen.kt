@@ -8,8 +8,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,16 +20,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.daffa0050.assesment1.R
+import com.daffa0050.assesment1.model.UserData
 import com.daffa0050.assesment1.util.SettingsDataStore
 import kotlinx.coroutines.launch
 
 @Composable
-fun WelcomeScreen(navController: NavController, context: Context,
-                  dataStore: SettingsDataStore
+fun WelcomeScreen(
+    navController: NavController,
+    context: Context,
+    dataStore: SettingsDataStore
 ) {
     val scope = rememberCoroutineScope()
     val mainColor = Color(0xFFD7A86E)
     val white = Color.White
+
+    // Ambil data user dari dataStore secara reactive (Flow)
+    val userData by dataStore.userFlow.collectAsState(initial = UserData("", "", ""))
 
     Box(
         modifier = Modifier
@@ -50,7 +55,6 @@ fun WelcomeScreen(navController: NavController, context: Context,
                 modifier = Modifier.size(120.dp),
                 colorFilter = ColorFilter.tint(Color.White)
             )
-
 
             Text(
                 text = stringResource(id = R.string.welcome_title),
@@ -92,11 +96,22 @@ fun WelcomeScreen(navController: NavController, context: Context,
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
             Button(
                 onClick = {
                     scope.launch {
-                        signIn(context, dataStore)
-                        navController.navigate("home") // Arahkan ke halaman utama setelah login berhasil
+                        if (userData.email.isNotEmpty()) {
+                            // Sudah login, langsung ke home tanpa signIn ulang
+                            navController.navigate("home") {
+                                popUpTo("welcome") { inclusive = true }
+                            }
+                        } else {
+                            // Belum login, jalankan proses signIn
+                            signIn(context, dataStore)
+                            navController.navigate("home") {
+                                popUpTo("welcome") { inclusive = true }
+                            }
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
@@ -104,7 +119,7 @@ fun WelcomeScreen(navController: NavController, context: Context,
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.search), // Ganti dengan ikon Google
+                    painter = painterResource(id = R.drawable.search), // Ganti dengan ikon Google yang sesuai
                     contentDescription = "Google Icon",
                     tint = Color.Unspecified,
                     modifier = Modifier.size(20.dp)
@@ -118,11 +133,9 @@ fun WelcomeScreen(navController: NavController, context: Context,
                 )
             }
 
-
-            // Tombol Info Aplikasi
             Button(
                 onClick = {
-                    navController.navigate("info") // Ganti dengan screen tujuan kamu
+                    navController.navigate("info")
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
                 modifier = Modifier.fillMaxWidth()
