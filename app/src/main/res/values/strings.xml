@@ -80,5 +80,6 @@
     <string name="profil">Profil</string>
     <string name="logout">Logout</string>
     <string name="tutup">Close</string>
+    <string name="tambah_telur">Add Egg</string>
 
 </resources>

@@ -1,11 +1,17 @@
 package com.daffa0050.assesment1.screen
 
 import android.app.Application
+import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Configuration.*
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.os.Build
+import android.provider.MediaStore
 import androidx.credentials.CredentialManager
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,11 +32,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CustomCredential
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,8 +51,13 @@ import com.daffa0050.assesment1.util.ColorManager
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
 import coil.compose.rememberAsyncImagePainter
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
+import com.canhub.cropper.CropImageView
 import com.daffa0050.assesment1.model.UserData
 import com.daffa0050.assesment1.util.SettingsDataStore
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -132,6 +145,11 @@ fun MainScreen(navController: NavHostController) {
     val dataStore = SettingsDataStore(context)
     val userData by dataStore.userFlow.collectAsState(UserData())
     var profilDialog by remember { mutableStateOf(false) }
+    var bitmap: Bitmap? by remember { mutableStateOf(null) }
+    val launcher = rememberLauncherForActivityResult(CropImageContract()) {
+        bitmap = getCroppedImage(context.contentResolver, it)
+    }
+
 
     val currentThemeName = colorManager.themeColor.collectAsState(initial = "Coklat").value
     var expanded by remember { mutableStateOf(false) }
@@ -274,6 +292,23 @@ fun MainScreen(navController: NavHostController) {
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                val options = CropImageContractOptions(
+                    null, CropImageOptions(
+                        imageSourceIncludeGallery = false,
+                        imageSourceIncludeCamera = true,
+                        fixAspectRatio = true
+                    )
+                )
+                launcher.launch(options)
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_photo_camera_24),
+                    contentDescription = stringResource(id = R.string.tambah_telur)
+                )
+            }
         }
     ) { innerPadding ->
         ScreenContent(
@@ -655,6 +690,33 @@ suspend fun signIn(context: Context, dataStore: SettingsDataStore) {
         Log.e("SIGN-IN", "Error: ${e.errorMessage}")
     }
 }
+private suspend fun signOut(context: Context, dataStore: SettingsDataStore) {
+    try {
+        val credentialManager = CredentialManager.create(context)
+        credentialManager.clearCredentialState(
+            ClearCredentialStateRequest()
+        )
+        dataStore.saveData(UserData())
+    } catch (e: ClearCredentialException){
+        Log.e("SIGN-IN", "Error: ${e.errorMessage}")
+    }
+}
+private fun getCroppedImage(resolver: ContentResolver, result: CropImageView.CropResult) : Bitmap? {
+    if(!result.isSuccessful) {
+        Log.e("IMAGE","Error: ${result.error}")
+        return null
+    }
+    val uri = result.uriContent ?: return null
+
+    return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+        MediaStore.Images.Media.getBitmap(resolver, uri)
+    } else {
+        val source = ImageDecoder.createSource(resolver, uri)
+        ImageDecoder.decodeBitmap(source)
+    }
+}
+
+
 suspend fun handleSignIn(result: GetCredentialResponse, dataStore: SettingsDataStore) {
     val credential = result.credential
     if (credential is CustomCredential &&
