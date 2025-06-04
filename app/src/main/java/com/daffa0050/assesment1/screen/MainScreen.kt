@@ -363,6 +363,8 @@ fun ScreenContent(
     var expandedGrosir by remember { mutableStateOf(false) }
     var showShareButton by rememberSaveable { mutableStateOf(false) }
 
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(kg, grosirKg, jenisPembelian) {
         totalBayar = when {
             jenisPembelian == retailLabel && kg.isNotEmpty() -> {
@@ -609,14 +611,18 @@ fun ScreenContent(
                     val pemesanan = Pemesanan(
                         customerName = namaPembeli,
                         customerAddress = alamatPembeli,
-                        purchaseType = if (jenisPembelian == retailLabel)
-                            "Eceran"
-                        else
-                            "Grosir",
+                        purchaseType = if (jenisPembelian == retailLabel) "Eceran" else "Grosir",
                         amount = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
-                        total = totalBayar
+                        total = totalBayar,
+                        eggImage = null,        // null karena belum ada gambar
+                        createdAt = null,       // null karena belum ada tanggal dibuat
+                        updatedAt = null        // null karena belum ada tanggal update
                     )
-                    viewModel.tambahPemesanan(pemesanan)
+
+
+                    coroutineScope.launch {
+                        viewModel.tambahPemesanan(pemesanan)
+                    }
 
                     Toast.makeText(
                         context,
@@ -624,6 +630,7 @@ fun ScreenContent(
                         Toast.LENGTH_SHORT
                     ).show()
 
+                    // Reset input
                     namaPembeli = ""
                     alamatPembeli = ""
                     kg = ""
@@ -648,6 +655,7 @@ fun ScreenContent(
         Spacer(Modifier.height(12.dp))
     }
 }
+
 suspend fun signIn(context: Context, dataStore: SettingsDataStore) {
     val googleOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)

@@ -463,8 +463,12 @@ fun EditPemesananScreen(
                             customerAddress = alamat,
                             purchaseType = jenis,
                             amount = jumlahInt,
-                            total = totalHarga
+                            total = totalHarga,
+                            eggImage = null,
+                            createdAt = null,
+                            updatedAt = null
                         )
+
 
                         scope.launch {
                             viewModel.updatePemesanan(updated)
