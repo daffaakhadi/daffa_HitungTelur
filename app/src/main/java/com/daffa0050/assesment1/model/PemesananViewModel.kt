@@ -20,14 +20,14 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
 
     val totalEceran = allPemesanan.map { pesanan ->
         pesanan
-            .filter { it.jenis == "Eceran" }
-            .sumOf { it.totalHarga }
+            .filter { it.purchaseType == "Eceran" }
+            .sumOf { it.total }
     }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
     val totalGrosir = allPemesanan.map { pesanan ->
         pesanan
-            .filter { it.jenis == "Grosir" }
-            .sumOf { it.totalHarga }
+            .filter { it.purchaseType == "Grosir" }
+            .sumOf { it.total }
     }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
     fun getPemesananById(id: Int): Flow<Pemesanan?> {

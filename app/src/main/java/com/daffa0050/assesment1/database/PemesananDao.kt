@@ -1,6 +1,7 @@
 package com.daffa0050.assesment1.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -17,7 +18,7 @@ interface PemesananDao {
     suspend fun insert(pemesanan: Pemesanan)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(data: List<Pemesanan>)
+    suspend fun insertAll(data: List<Pemesanan>) // untuk sinkronisasi
 
     @Query("SELECT SUM(total) FROM pemesanan WHERE purchaseType = 'Eceran'")
     fun getTotalEceran(): Flow<Int?>
@@ -34,5 +35,7 @@ interface PemesananDao {
     @Update
     suspend fun updatePemesanan(pemesanan: Pemesanan)
 
+    @Delete
+    suspend fun delete(pemesanan: Pemesanan)
 }
 
