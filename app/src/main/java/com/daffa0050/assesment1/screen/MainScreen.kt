@@ -30,12 +30,9 @@ import androidx.navigation.NavHostController
 import com.daffa0050.assesment1.R
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.ClearCredentialStateRequest
@@ -53,7 +50,6 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
-import coil.compose.rememberAsyncImagePainter
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
@@ -318,36 +314,16 @@ fun MainScreen(navController: NavHostController) {
         )
     }
 
-    // 💬 Profil Dialog muncul di tengah
     if (profilDialog) {
-        AlertDialog(
+        ProfilDialog(
+            user = userData,
             onDismissRequest = { profilDialog = false },
-            title = { Text(text = stringResource(id = R.string.profil)) },
-            text = {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(userData.photoUrl),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(userData.name, fontWeight = FontWeight.Bold)
-                    Text(userData.email)
+            onConfirmation = {
+                profilDialog = false
+                CoroutineScope(Dispatchers.IO).launch {
+                    signOut(context, dataStore)
                 }
-            },
-            confirmButton = {
-                TextButton(onClick = { profilDialog = false }) {
-                    Text("Tutup", color = currentColorScheme.primary)
-                }
-            },
-            containerColor = currentColorScheme.surface,
-            titleContentColor = currentColorScheme.onSurface,
-            textContentColor = currentColorScheme.onSurface
+            }
         )
     }
 }
