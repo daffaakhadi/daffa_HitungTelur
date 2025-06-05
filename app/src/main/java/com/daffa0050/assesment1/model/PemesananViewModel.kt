@@ -1,6 +1,7 @@
 package com.daffa0050.assesment1.model
 
 import android.app.Application
+import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.daffa0050.assesment1.database.PemesananDb
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+
 
 class PemesananViewModel(application: Application) : AndroidViewModel(application) {
     private val pemesananDao = PemesananDb.getDatabase(application).pemesananDao()
@@ -29,9 +31,9 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
         it.filter { p -> p.purchaseType == "Grosir" }.sumOf { p -> p.total }
     }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
-    fun tambahPemesanan(pemesanan: Pemesanan) {
+    fun tambahPemesanan(pemesanan: Pemesanan, bitmap: Bitmap?) {
         viewModelScope.launch {
-            repository.tambahPemesanan(pemesanan)
+            repository.tambahPemesanan(pemesanan, bitmap)
         }
     }
 

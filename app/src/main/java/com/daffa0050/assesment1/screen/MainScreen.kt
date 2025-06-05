@@ -149,7 +149,7 @@ fun MainScreen(navController: NavHostController) {
     var profilDialog by remember { mutableStateOf(false) }
     val resolver = context.contentResolver
 
-    var croppedBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var croppedBitmap by rememberSaveable { mutableStateOf<Bitmap?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = CropImageContract()
@@ -357,7 +357,7 @@ fun ScreenContent(
     val wholesaleLabel = stringResource(R.string.wholesale)
     val selectLabel = stringResource(R.string.select)
     val selectWholesaleOptionLabel = stringResource(R.string.select_wholesale_option)
-    val capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val capturedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
 
     val hargaPerKg = 25000
@@ -677,7 +677,7 @@ fun ScreenContent(
 
 
                     coroutineScope.launch {
-                        viewModel.tambahPemesanan(pemesanan)
+                        viewModel.tambahPemesanan(pemesanan, croppedBitmap)
                     }
 
                     Toast.makeText(

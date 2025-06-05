@@ -25,7 +25,7 @@ data class Pemesanan(
     val total: Int,
 
     @Json(name = "eggImage")
-    val eggImage: String? = null,
+    val eggImage: String?,
 
     @Json(name = "createdAt")
     val createdAt: String? = null,
