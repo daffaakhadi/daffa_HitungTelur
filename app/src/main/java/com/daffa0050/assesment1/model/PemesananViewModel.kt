@@ -7,17 +7,19 @@ import androidx.lifecycle.viewModelScope
 import com.daffa0050.assesment1.database.PemesananDb
 import com.daffa0050.assesment1.network.PemesananRepository
 import com.daffa0050.assesment1.network.TelurApiService
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-
 
 class PemesananViewModel(application: Application) : AndroidViewModel(application) {
     private val pemesananDao = PemesananDb.getDatabase(application).pemesananDao()
     private val apiService = TelurApiService.create()
     private val repository = PemesananRepository(apiService, pemesananDao, application)
+
+    val status = MutableStateFlow(TelurApiService.Companion.ApiStatus.SUCCESS)
 
     val allPemesanan = repository.semuaPemesanan
         .map { it.sortedByDescending { p -> p.id } }
@@ -39,7 +41,13 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun sinkronisasi(userId: String = "guest") {
         viewModelScope.launch {
-            repository.sinkronDariServer(userId)
+            status.value = TelurApiService.Companion.ApiStatus.LOADING
+            try {
+                repository.sinkronDariServer(userId)
+                status.value = TelurApiService.Companion.ApiStatus.SUCCESS
+            } catch (e: Exception) {
+                status.value = TelurApiService.Companion.ApiStatus.ERROR
+            }
         }
     }
 
@@ -51,8 +59,8 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
         repository.dao.deletePemesanan(id)
     }
 
-    fun getPemesananById(id: Int): Flow<Pemesanan?> {
+    fun getPemesananById(id: Int): StateFlow<Pemesanan?> {
         return repository.dao.getPemesananById(id)
+            .stateIn(viewModelScope, SharingStarted.Lazily, null)
     }
 }
-

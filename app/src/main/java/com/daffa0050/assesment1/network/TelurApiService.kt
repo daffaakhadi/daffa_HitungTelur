@@ -48,5 +48,6 @@
 
                 return retrofit.create(TelurApiService::class.java)
             }
+            enum class ApiStatus{ LOADING, SUCCESS, ERROR }
         }
     }

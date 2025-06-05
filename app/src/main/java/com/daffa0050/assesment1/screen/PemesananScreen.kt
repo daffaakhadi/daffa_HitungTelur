@@ -45,9 +45,11 @@ import coil.compose.AsyncImage
 import com.daffa0050.assesment1.R
 import com.daffa0050.assesment1.model.Pemesanan
 import com.daffa0050.assesment1.model.PemesananViewModel
+import com.daffa0050.assesment1.network.TelurApiService
 import com.daffa0050.assesment1.util.SettingsDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,9 +62,15 @@ fun ListPemesananScreen(
     val pemesananList by viewModel.allPemesanan.collectAsState()
     val totalEceran by viewModel.totalEceran.collectAsState()
     val totalGrosir by viewModel.totalGrosir.collectAsState()
+    val status by viewModel.status.collectAsState()
     val context = LocalContext.current
 
     var expanded by remember { mutableStateOf(false) }
+
+    // Panggil sinkronisasi sekali saat screen pertama kali dibuka
+    LaunchedEffect(Unit) {
+        viewModel.sinkronisasi(userId = "guest") // ganti sesuai userId sesungguhnya
+    }
 
     Scaffold(
         topBar = {
@@ -143,32 +151,49 @@ fun ListPemesananScreen(
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            if (pemesananList.isEmpty()) {
-                Text(text = stringResource(id = R.string.list_pemesanan_empty))
-            } else {
-                Text(text = stringResource(id = R.string.total_eceran, totalEceran))
-                Text(text = stringResource(id = R.string.total_grosir, totalGrosir))
-                Spacer(modifier = Modifier.height(16.dp))
 
-                if (showList) {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(pemesananList) { item ->
-                            PemesananItem(item = item, context = context, navController = navController)
-                        }
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(pemesananList) { item ->
-                            PemesananItem(item = item, context = context, navController = navController)
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .padding(16.dp)
+            .fillMaxSize()
+        ) {
+            when (status) {
+                TelurApiService.Companion.ApiStatus.LOADING -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                TelurApiService.Companion.ApiStatus.ERROR -> {
+                    Text(
+                        text = "Terjadi kesalahan",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                TelurApiService.Companion.ApiStatus.SUCCESS -> {
+                    if (pemesananList.isEmpty()) {
+                        Text(text = stringResource(id = R.string.list_pemesanan_empty))
+                    } else {
+                        Column {
+                            Text(text = stringResource(id = R.string.total_eceran, totalEceran))
+                            Text(text = stringResource(id = R.string.total_grosir, totalGrosir))
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            if (showList) {
+                                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    items(pemesananList) { item ->
+                                        PemesananItem(item = item, context = context, navController = navController)
+                                    }
+                                }
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(pemesananList) { item ->
+                                        PemesananItem(item = item, context = context, navController = navController)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -176,6 +201,7 @@ fun ListPemesananScreen(
         }
     }
 }
+
 
 
 @Composable
