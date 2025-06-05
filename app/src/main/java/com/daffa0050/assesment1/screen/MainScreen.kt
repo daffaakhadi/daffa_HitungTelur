@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.res.Configuration.*
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.credentials.CredentialManager
@@ -14,6 +15,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -30,9 +32,13 @@ import androidx.navigation.NavHostController
 import com.daffa0050.assesment1.R
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.ClearCredentialStateRequest
@@ -50,6 +56,7 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
+import coil.compose.rememberAsyncImagePainter
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
@@ -61,7 +68,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 
 object PreferenceKeys {
     val THEME_COLOR = stringPreferencesKey("theme_color")
@@ -141,9 +147,14 @@ fun MainScreen(navController: NavHostController) {
     val dataStore = SettingsDataStore(context)
     val userData by dataStore.userFlow.collectAsState(UserData())
     var profilDialog by remember { mutableStateOf(false) }
-    var bitmap: Bitmap? by remember { mutableStateOf(null) }
-    val launcher = rememberLauncherForActivityResult(CropImageContract()) {
-        bitmap = getCroppedImage(context.contentResolver, it)
+    val resolver = context.contentResolver
+
+    var croppedBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = CropImageContract()
+    ) { result ->
+        croppedBitmap = getCroppedImage(resolver, result)
     }
 
 
@@ -187,6 +198,7 @@ fun MainScreen(navController: NavHostController) {
             textContentColor = currentColorScheme.onSurface
         )
     }
+
 
     Scaffold(
         topBar = {
@@ -292,7 +304,8 @@ fun MainScreen(navController: NavHostController) {
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 val options = CropImageContractOptions(
-                    null, CropImageOptions(
+                    uri = null,
+                    cropImageOptions = CropImageOptions(
                         imageSourceIncludeGallery = false,
                         imageSourceIncludeCamera = true,
                         fixAspectRatio = true
@@ -306,11 +319,13 @@ fun MainScreen(navController: NavHostController) {
                 )
             }
         }
+
     ) { innerPadding ->
         ScreenContent(
             modifier = Modifier.padding(innerPadding),
             viewModel = viewModel,
-            colorScheme = currentColorScheme
+            colorScheme = currentColorScheme,
+            croppedBitmap = croppedBitmap
         )
     }
 
@@ -334,13 +349,16 @@ fun MainScreen(navController: NavHostController) {
 fun ScreenContent(
     modifier: Modifier = Modifier,
     viewModel: PemesananViewModel,
-    colorScheme: AppColorScheme
+    colorScheme: AppColorScheme,
+    croppedBitmap: Bitmap?
 ) {
     val context = LocalContext.current
     val retailLabel = stringResource(R.string.retail)
     val wholesaleLabel = stringResource(R.string.wholesale)
     val selectLabel = stringResource(R.string.select)
     val selectWholesaleOptionLabel = stringResource(R.string.select_wholesale_option)
+    val capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+
 
     val hargaPerKg = 25000
     val grosirHargaPer15Kg = 330000
@@ -522,16 +540,17 @@ fun ScreenContent(
                 )
             )
         } else if (jenisPembelian == wholesaleLabel) {
-            ExposedDropdownMenuBox(expanded = expandedGrosir, onExpandedChange = { expandedGrosir = !expandedGrosir }) {
+            ExposedDropdownMenuBox(
+                expanded = expandedGrosir,
+                onExpandedChange = { expandedGrosir = !expandedGrosir }
+            ) {
                 OutlinedTextField(
                     readOnly = true,
                     value = grosirKg,
                     onValueChange = {},
                     label = { Text(stringResource(R.string.select_wholesale_package)) },
                     trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = expandedGrosir
-                        )
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGrosir)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -542,7 +561,11 @@ fun ScreenContent(
                         unfocusedBorderColor = colorScheme.primary.copy(alpha = 0.5f)
                     )
                 )
-                ExposedDropdownMenu(expanded = expandedGrosir, onDismissRequest = { expandedGrosir = false }) {
+
+                ExposedDropdownMenu(
+                    expanded = expandedGrosir,
+                    onDismissRequest = { expandedGrosir = false }
+                ) {
                     grosirOptions.forEach { kgOption ->
                         DropdownMenuItem(
                             text = { Text(kgOption) },
@@ -556,7 +579,25 @@ fun ScreenContent(
             }
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+// Tampilkan gambar jika ada hasil kamera/crop
+        capturedImageUri?.let { uri ->
+            Image(
+                painter = rememberAsyncImagePainter(model = uri),
+                contentDescription = stringResource(R.string.tambah_telur),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
+                    .align(Alignment.CenterHorizontally), // Pastikan ini dalam ColumnScope
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
 
         Card(
             colors = CardDefaults.cardColors(
@@ -569,6 +610,21 @@ fun ScreenContent(
                     .fillMaxWidth()
                     .padding(12.dp)
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                croppedBitmap?.let { bitmap ->
+                    Text(text = "Gambar Telur:", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Hasil Kamera",
+                        modifier = Modifier
+                            .size(200.dp)
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 Text(
                     text = stringResource(R.string.result),
                     style = MaterialTheme.typography.titleMedium,
@@ -614,9 +670,9 @@ fun ScreenContent(
                         purchaseType = if (jenisPembelian == retailLabel) "Eceran" else "Grosir",
                         amount = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
                         total = totalBayar,
-                        eggImage = null,        // null karena belum ada gambar
-                        createdAt = null,       // null karena belum ada tanggal dibuat
-                        updatedAt = null        // null karena belum ada tanggal update
+                        eggImage = capturedImageUri?.toString(),
+                        createdAt = null,
+                        updatedAt = null
                     )
 
 
