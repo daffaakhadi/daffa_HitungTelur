@@ -22,6 +22,7 @@ import java.io.FileOutputStream
 
 class PemesananRepository(
     private val apiService: TelurApiService,
+    private val authPref: AuthPreference,
     val dao: PemesananDao,
     private val context: Context
 ) {
@@ -84,10 +85,47 @@ class PemesananRepository(
             dao.insert(pemesanan)
         }
     }
-    suspend fun updatePemesanan(pemesanan: Pemesanan) {
-        dao.updatePemesanan(pemesanan)
-    }
+    suspend fun updatePemesananApi(
+        id: Int,
+        customerName: String,
+        customerAddress: String,
+        purchaseType: String,
+        amount: Int,
+        total: Int,
+        bitmap: Bitmap?
+    ) {
+        val token = "Bearer ${authPref.getToken()}"
 
+        val customerNameBody = customerName.toRequestBody("text/plain".toMediaType())
+        val customerAddressBody = customerAddress.toRequestBody("text/plain".toMediaType())
+        val purchaseTypeBody = purchaseType.toRequestBody("text/plain".toMediaType())
+        val amountBody = amount.toString().toRequestBody("text/plain".toMediaType())
+        val totalBody = total.toString().toRequestBody("text/plain".toMediaType())
+        val methodBody = "PUT".toRequestBody("text/plain".toMediaType())
+
+        val imagePart = bitmap?.let {
+            val file = createTempFile("upload", ".jpg")
+            val stream = FileOutputStream(file)
+            it.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            stream.flush()
+            stream.close()
+
+            file.asRequestBody("image/jpeg".toMediaType())
+                .let { body -> MultipartBody.Part.createFormData("image", file.name, body) }
+        }
+
+        apiService.updatePemesanan(
+            id = id,
+            token = token,
+            customerName = customerNameBody,
+            customerAddress = customerAddressBody,
+            purchaseType = purchaseTypeBody,
+            amount = amountBody,
+            total = totalBody,
+            method = methodBody,
+            image = imagePart
+        )
+    }
 
     suspend fun sinkronDariServer(userId: String) {
         if (NetworkUtils.isOnline(context)) {

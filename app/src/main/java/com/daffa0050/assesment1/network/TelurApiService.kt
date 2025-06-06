@@ -2,7 +2,6 @@
 
     import com.daffa0050.assesment1.model.ApiResponse
     import com.daffa0050.assesment1.model.OpStatus
-    import com.daffa0050.assesment1.model.Pemesanan
     import com.squareup.moshi.Moshi
     import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
     import okhttp3.MultipartBody
@@ -35,11 +34,27 @@
             @Part("total") total: RequestBody,
             @Part image: MultipartBody.Part
         ): OpStatus
+
         @DELETE("eggs/{id}")
         suspend fun deletePemesanan(
             @Header("Authorization") userId: String,
             @Path("id") id: String
         ): OpStatus
+
+        @Multipart
+        @POST("eggs/{id}")
+        suspend fun updatePemesanan(
+            @Path("id") id: Int,
+            @Header("Authorization") token: String,
+            @Part("customerName") customerName: RequestBody,
+            @Part("customerAddress") customerAddress: RequestBody,
+            @Part("purchaseType") purchaseType: RequestBody,
+            @Part("amount") amount: RequestBody,
+            @Part("total") total: RequestBody,
+            @Part("_method") method: RequestBody, // <- ini yang wajib untuk menyatakan PUT
+            @Part image: MultipartBody.Part?
+        ): OpStatus
+
 
         companion object {
             private const val BASE_URL = "https://egg-api.sendiko.my.id/"

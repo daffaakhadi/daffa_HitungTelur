@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.daffa0050.assesment1.database.PemesananDb
+import com.daffa0050.assesment1.network.AuthPreference
 import com.daffa0050.assesment1.network.PemesananRepository
 import com.daffa0050.assesment1.network.TelurApiService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 class PemesananViewModel(application: Application) : AndroidViewModel(application) {
     private val pemesananDao = PemesananDb.getDatabase(application).pemesananDao()
     private val apiService = TelurApiService.create()
-    private val repository = PemesananRepository(apiService, pemesananDao, application)
+    private val authPref = AuthPreference(application)
+    private val repository = PemesananRepository(apiService, authPref,pemesananDao, application)
 
     val status = MutableStateFlow(TelurApiService.Companion.ApiStatus.SUCCESS)
 
@@ -69,9 +71,37 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun updatePemesanan(pemesanan: Pemesanan) {
+    fun updatePemesananWithImage(
+        id: Int,
+        customerName: String,
+        customerAddress: String,
+        purchaseType: String,
+        amount: Int,
+        total: Int,
+        image: Bitmap?,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
-            repository.dao.updatePemesanan(pemesanan)
+            try {
+                // Panggil fungsi di repository yang akan menangani logika API
+                repository.updatePemesananApi(
+                    id = id,
+                    customerName = customerName,
+                    customerAddress = customerAddress,
+                    purchaseType = purchaseType,
+                    amount = amount,
+                    total = total,
+                    bitmap = image
+                )
+                // Jika berhasil, panggil callback onSuccess untuk navigasi kembali
+                onSuccess()
+                // Lakukan sinkronisasi ulang untuk memastikan data di UI terupdate
+                sinkronisasi()
+            } catch (e: Exception) {
+                // Jika gagal, panggil callback onError untuk menampilkan pesan di UI
+                onError(e.message ?: "Terjadi kesalahan yang tidak diketahui")
+            }
         }
     }
 

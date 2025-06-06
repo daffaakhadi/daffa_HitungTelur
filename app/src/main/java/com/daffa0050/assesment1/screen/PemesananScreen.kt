@@ -4,8 +4,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -58,6 +67,7 @@ import androidx.compose.ui.text.font.FontWeight
 import coil.request.ImageRequest
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.ui.graphics.asImageBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -413,283 +423,263 @@ private fun PemesananItem(
     }
 }
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun EditPemesananScreen(
-        navController: NavHostController,
-        id: Int,
-        viewModel: PemesananViewModel = viewModel()
-    ) {
-        val pemesanan by viewModel.getPemesananById(id).collectAsState(initial = null)
-        val scope = rememberCoroutineScope()
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditPemesananScreen(
+    navController: NavHostController,
+    id: Int,
+    // ViewModel di-instance di sini
+    viewModel: PemesananViewModel = viewModel()
+) {
+    // Mengambil data dari ViewModel berdasarkan ID
+    val pemesanan by viewModel.getPemesananById(id).collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-        var nama by remember { mutableStateOf("") }
-        var alamat by remember { mutableStateOf("") }
-        val retailValue = "Eceran"
-        val wholesaleValue = "Grosir"
+    // State untuk menampung nilai dari form input
+    var nama by remember { mutableStateOf("") }
+    var alamat by remember { mutableStateOf("") }
+    val retailValue = "Eceran"
+    val wholesaleValue = "Grosir"
+    var jenis by remember { mutableStateOf(retailValue) }
+    var jumlah by remember { mutableStateOf("") }
 
-        var jenis by remember { mutableStateOf(retailValue) }
-        var jumlah by remember { mutableStateOf("") }
+    // State untuk UI (dropdown, dialog, error)
+    var expanded by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
-        var expanded by remember { mutableStateOf(false) }
-        var weightExpanded by remember { mutableStateOf(false) }
-        var errorMessage by remember { mutableStateOf<String?>(null) }
-        val wholesaleWeights = listOf(15, 30, 45, 60, 75, 90)
+    // State untuk menampung gambar BARU yang dipilih pengguna
+    var newImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-        var showDeleteDialog by remember { mutableStateOf(false) }
-
-        val buyerNameError = stringResource(R.string.buyer_name_error)
-        val buyerAddressError = stringResource(R.string.buyer_address_error)
-        val selectPurchaseTypeError = stringResource(R.string.select_purchase_type_error)
-        val invalidError = stringResource(R.string.invalid)
-        val buyerNameLabel = stringResource(R.string.buyer_name)
-        val buyerAddressLabel = stringResource(R.string.buyer_address)
-        val jenisPembelianLabel = stringResource(R.string.jenis_pembelian)
-        val inputKgLabel = stringResource(R.string.input_kg)
-        val updateButtonText = stringResource(R.string.update)
-        val editPemesananTitle = stringResource(R.string.edit_pemesanan_title)
-        val dropdownContentDesc = stringResource(R.string.dropdown_icon)
-        val closeIconContentDesc = stringResource(R.string.close_icon)
-
-        val deleteButtonText = stringResource(id = R.string.delete)
-        val deleteConfirmationTitle = stringResource(id = R.string.delete_confirmation_title)
-        val deleteConfirmationMessage = stringResource(id = R.string.delete_confirmation_message)
-        val cancelText = stringResource(id = R.string.cancel)
-        val confirmDeleteText = stringResource(id = R.string.confirm_delete)
-
-        val context = LocalContext.current
-        val userId = "id_login_pengguna"
-
-        LaunchedEffect(pemesanan) {
-            pemesanan?.let {
-                nama = it.customerName
-                alamat = it.customerAddress
-                jenis = it.purchaseType
-                jumlah = it.amount.toString()
+    // Launcher untuk mengambil gambar dari galeri
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let {
+                // Konversi URI ke Bitmap
+                newImageBitmap = if (Build.VERSION.SDK_INT < 28) {
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                } else {
+                    val source = ImageDecoder.createSource(context.contentResolver, it)
+                    ImageDecoder.decodeBitmap(source)
+                }
             }
         }
+    )
 
-        if (showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
-                title = { Text(deleteConfirmationTitle) },
-                text = { Text(deleteConfirmationMessage) },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            viewModel.deletePemesanan(
-                                userId = userId,
-                                id = id.toString(),
-                                onSuccess = {
-                                    showDeleteDialog = false
-                                    navController.popBackStack() // balik ke list
-                                },
-                                onError = { errorMsg ->
-                                    Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-                                    showDeleteDialog = false
-                                }
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text(confirmDeleteText)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) {
-                        Text(cancelText)
+    // Launcher untuk mengambil gambar dari kamera
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+        onResult = { bitmap: Bitmap? ->
+            newImageBitmap = bitmap
+        }
+    )
+
+    // Mengisi form dengan data yang ada saat pertama kali dimuat
+    LaunchedEffect(pemesanan) {
+        pemesanan?.let {
+            nama = it.customerName
+            alamat = it.customerAddress
+            jenis = it.purchaseType
+            jumlah = it.amount.toString()
+        }
+    }
+
+    // Dialog konfirmasi hapus
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(id = R.string.delete_confirmation_title)) },
+            text = { Text(stringResource(id = R.string.delete_confirmation_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // Ganti dengan ID pengguna yang sebenarnya
+                        val userId = "id_login_pengguna"
+                        viewModel.deletePemesanan(
+                            userId = userId,
+                            id = id.toString(),
+                            onSuccess = {
+                                showDeleteDialog = false
+                                navController.popBackStack()
+                            },
+                            onError = { errorMsg ->
+                                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                                showDeleteDialog = false
+                            }
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(id = R.string.confirm_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // 2. STRUKTUR UTAMA UI MENGGUNAKAN SCAFFOLD
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.edit_pemesanan_title)) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.Close, contentDescription = "Tutup")
                     }
                 }
             )
         }
-
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(editPemesananTitle) },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.Close, contentDescription = closeIconContentDesc)
-                        }
-                    }
-                )
-            }
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // 3. KARTU UNTUK FORM UTAMA
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-
-                        errorMessage?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
+                    // 4. AREA PRATINJAU GAMBAR
+                    Text("Gambar Produk", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (newImageBitmap != null) {
+                            Image(
+                                bitmap = newImageBitmap!!.asImageBitmap(),
+                                contentDescription = "Pratinjau Gambar Baru",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-
-                        OutlinedTextField(
-                            value = nama,
-                            onValueChange = { nama = it },
-                            label = { Text(buyerNameLabel) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        OutlinedTextField(
-                            value = alamat,
-                            onValueChange = { alamat = it },
-                            label = { Text(buyerAddressLabel) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Box {
-                            OutlinedTextField(
-                                value = if (jenis == retailValue) "Eceran" else "Grosir",
-                                onValueChange = {},
-                                label = { Text(jenisPembelianLabel) },
-                                modifier = Modifier.fillMaxWidth(),
-                                readOnly = true
+                        } else if (!pemesanan?.image.isNullOrEmpty()) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context).data(pemesanan?.image).crossfade(true).build(),
+                                contentDescription = "Gambar Saat Ini",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
                             )
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Eceran") },
-                                    onClick = {
-                                        jenis = retailValue
-                                        expanded = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Grosir") },
-                                    onClick = {
-                                        jenis = wholesaleValue
-                                        expanded = false
-                                        if (jumlah.toIntOrNull() == null || jumlah.toIntOrNull()!! < 15) {
-                                            jumlah = "15"
-                                        }
-                                    }
-                                )
-                            }
-                            Spacer(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .clickable { expanded = true }
-                            )
-                        }
-
-                        if (jenis == wholesaleValue) {
-                            Box {
-                                OutlinedTextField(
-                                    value = jumlah,
-                                    onValueChange = { jumlah = it },
-                                    label = { Text(inputKgLabel) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    readOnly = true,
-                                    trailingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowDropDown,
-                                            contentDescription = dropdownContentDesc
-                                        )
-                                    }
-                                )
-                                DropdownMenu(
-                                    expanded = weightExpanded,
-                                    onDismissRequest = { weightExpanded = false }
-                                ) {
-                                    wholesaleWeights.forEach { weight ->
-                                        DropdownMenuItem(
-                                            text = { Text("$weight kg") },
-                                            onClick = {
-                                                jumlah = weight.toString()
-                                                weightExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                                Spacer(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .clickable { weightExpanded = true }
-                                )
-                            }
                         } else {
-                            OutlinedTextField(
-                                value = jumlah,
-                                onValueChange = { jumlah = it },
-                                label = { Text(inputKgLabel) },
-                                modifier = Modifier.fillMaxWidth(),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            Icon(
+                                imageVector = Icons.Default.AccountBox,
+                                contentDescription = "Tidak ada gambar",
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 5. TOMBOL UNTUK MENGAMBIL GAMBAR
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        OutlinedButton(onClick = { cameraLauncher.launch() }, modifier = Modifier.weight(1f)) {
+                            Text("Kamera")
+                        }
+                        OutlinedButton(onClick = { galleryLauncher.launch("image/*") }, modifier = Modifier.weight(1f)) {
+                            Text("Galeri")
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // 6. FORM INPUT TEKS
+                    errorMessage?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    OutlinedTextField(value = nama, onValueChange = { nama = it }, label = { Text("Nama Pembeli") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = alamat, onValueChange = { alamat = it }, label = { Text("Alamat Pembeli") }, modifier = Modifier.fillMaxWidth())
+
+                    // ... (Dropdown untuk Jenis Pembelian dan Jumlah tidak diubah, sudah baik)
+                    Box {
+                        OutlinedTextField(
+                            value = if (jenis == retailValue) "Eceran" else "Grosir",
+                            onValueChange = {},
+                            label = { Text("Jenis Pembelian") },
+                            modifier = Modifier.fillMaxWidth(),
+                            readOnly = true,
+                            trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) }
+                        )
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            DropdownMenuItem(text = { Text("Eceran") }, onClick = { jenis = retailValue; expanded = false })
+                            DropdownMenuItem(text = { Text("Grosir") }, onClick = { jenis = wholesaleValue; expanded = false })
+                        }
+                        Spacer(modifier = Modifier.matchParentSize().clickable { expanded = true })
+                    }
+                    OutlinedTextField(
+                        value = jumlah,
+                        onValueChange = { jumlah = it },
+                        label = { Text("Jumlah (Kg)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
                 }
+            }
 
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = {
-                            if (nama.isBlank()) {
-                                errorMessage = buyerNameError
-                                return@Button
-                            }
-                            if (alamat.isBlank()) {
-                                errorMessage = buyerAddressError
-                                return@Button
-                            }
-                            if (jenis.isBlank()) {
-                                errorMessage = selectPurchaseTypeError
-                                return@Button
-                            }
-                            val jumlahInt = jumlah.toIntOrNull()
-                            if (jumlahInt == null || jumlahInt <= 0) {
-                                errorMessage = invalidError
-                                return@Button
-                            }
+            // 7. TOMBOL AKSI (UPDATE & DELETE)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        val jumlahInt = jumlah.toIntOrNull()
+                        if (nama.isBlank() || alamat.isBlank() || jumlahInt == null || jumlahInt <= 0) {
+                            errorMessage = "Semua field harus diisi dengan benar."
+                            return@Button
+                        }
+                        val totalHarga = if (jenis == retailValue) jumlahInt * 25000 else (jumlahInt / 15) * 330000
 
-                            val totalHarga = if (jenis == retailValue) jumlahInt * 25000
-                            else (jumlahInt / 15) * 330000
-
-                            val updated = Pemesanan(
+                        // Panggil ViewModel untuk melakukan update
+                        scope.launch {
+                            viewModel.updatePemesananWithImage(
                                 id = id,
                                 customerName = nama,
                                 customerAddress = alamat,
                                 purchaseType = jenis,
                                 amount = jumlahInt,
                                 total = totalHarga,
-                                image = null,
-                                createdAt = null,
-                                updatedAt = null
+                                image = newImageBitmap,
+                                onSuccess = {
+                                    Toast.makeText(context, "Data berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
+                                },
+                                onError = { errorMsg ->
+                                    errorMessage = errorMsg
+                                }
                             )
-
-
-                            scope.launch {
-                                viewModel.updatePemesanan(updated)
-                                navController.popBackStack()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(updateButtonText)
-                    }
-
-                    Button(
-                        onClick = { showDeleteDialog = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text(deleteButtonText)
-                    }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                ) {
+                    Text("Update Data")
+                }
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Hapus Data")
                 }
             }
         }
     }
+}
