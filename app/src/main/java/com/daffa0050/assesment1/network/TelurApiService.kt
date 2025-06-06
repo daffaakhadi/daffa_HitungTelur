@@ -1,5 +1,6 @@
     package com.daffa0050.assesment1.network
 
+    import com.daffa0050.assesment1.model.ApiResponse
     import com.daffa0050.assesment1.model.OpStatus
     import com.daffa0050.assesment1.model.Pemesanan
     import com.squareup.moshi.Moshi
@@ -21,7 +22,7 @@
         @GET("eggs")
         suspend fun getPemesanan(
             @Header("Authorization") userId: String
-        ): List<Pemesanan>
+        ): ApiResponse
 
         @Multipart
         @POST("eggs")

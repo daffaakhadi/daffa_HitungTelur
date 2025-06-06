@@ -92,10 +92,18 @@ class PemesananRepository(
     suspend fun sinkronDariServer(userId: String) {
         if (NetworkUtils.isOnline(context)) {
             try {
-                val dataDariServer = apiService.getPemesanan(userId)
-                dao.insertAll(dataDariServer)
-            } catch (_: Exception) {
-                // Gagal sinkron, bisa diabaikan atau beri log nanti
+                // 1. Panggil API, hasilnya adalah objek ApiResponse
+                val response = apiService.getPemesanan(userId)
+
+                // 2. Ambil daftar pemesanan dari dalam properti .data
+                val daftarPemesanan = response.data
+
+                // 3. Simpan daftar yang sudah benar ini ke database
+                if (daftarPemesanan.isNotEmpty()) {
+                    dao.insertAll(daftarPemesanan)
+                }
+            } catch (e: Exception) {
+                Log.e("Sinkronisasi", "Gagal sinkron dari server: ${e.message}")
             }
         }
     }
