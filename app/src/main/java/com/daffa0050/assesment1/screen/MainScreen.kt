@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.res.Configuration.*
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
-import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.credentials.CredentialManager
@@ -15,7 +14,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -56,7 +54,6 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialException
-import coil.compose.rememberAsyncImagePainter
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
@@ -357,8 +354,9 @@ fun ScreenContent(
     val wholesaleLabel = stringResource(R.string.wholesale)
     val selectLabel = stringResource(R.string.select)
     val selectWholesaleOptionLabel = stringResource(R.string.select_wholesale_option)
-    val capturedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+    // State untuk loading
+    var isLoading by rememberSaveable { mutableStateOf(false) }
 
     val hargaPerKg = 25000
     val grosirHargaPer15Kg = 330000
@@ -514,7 +512,6 @@ fun ScreenContent(
                 modifier = Modifier.padding(bottom = 4.dp),
                 color = colorScheme.primary
             )
-
         }
 
         if (jenisPembelian == retailLabel) {
@@ -581,23 +578,35 @@ fun ScreenContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-// Tampilkan gambar jika ada hasil kamera/crop
-        capturedImageUri?.let { uri ->
-            Image(
-                painter = rememberAsyncImagePainter(model = uri),
-                contentDescription = stringResource(R.string.tambah_telur),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
-                    .align(Alignment.CenterHorizontally), // Pastikan ini dalam ColumnScope
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
+        // Tampilkan preview gambar yang akan diupload
+        croppedBitmap?.let { bitmap ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Preview Gambar Telur:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "Preview Gambar Telur",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
 
         Card(
             colors = CardDefaults.cardColors(
@@ -610,21 +619,6 @@ fun ScreenContent(
                     .fillMaxWidth()
                     .padding(12.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                croppedBitmap?.let { bitmap ->
-                    Text(text = "Gambar Telur:", style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Hasil Kamera",
-                        modifier = Modifier
-                            .size(200.dp)
-                            .fillMaxWidth()
-                            .wrapContentWidth(Alignment.CenterHorizontally)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
                 Text(
                     text = stringResource(R.string.result),
                     style = MaterialTheme.typography.titleMedium,
@@ -664,39 +658,51 @@ fun ScreenContent(
                         }
                     }
 
+                    isLoading = true
+
                     val pemesanan = Pemesanan(
                         customerName = namaPembeli,
                         customerAddress = alamatPembeli,
                         purchaseType = if (jenisPembelian == retailLabel) "Eceran" else "Grosir",
                         amount = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
                         total = totalBayar,
-                        eggImage = capturedImageUri?.toString(),
+                        eggImage = null, // Akan diisi oleh ViewModel setelah upload
                         createdAt = null,
                         updatedAt = null
                     )
 
-
                     coroutineScope.launch {
-                        viewModel.tambahPemesanan(pemesanan, croppedBitmap)
+                        try {
+                            viewModel.tambahPemesanan(pemesanan, croppedBitmap)
+
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.order_success_message),
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            // Reset input setelah berhasil
+                            namaPembeli = ""
+                            alamatPembeli = ""
+                            kg = ""
+                            grosirKg = selectWholesaleOptionLabel
+                            jenisPembelian = selectLabel
+                            totalBayar = 0
+                            showShareButton = true
+
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                context,
+                                "Gagal menyimpan: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } finally {
+                            isLoading = false
+                        }
                     }
-
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.order_success_message),
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // Reset input
-                    namaPembeli = ""
-                    alamatPembeli = ""
-                    kg = ""
-                    grosirKg = selectWholesaleOptionLabel
-                    jenisPembelian = selectLabel
-                    totalBayar = 0
-                    showShareButton = true
                 }
             },
-            enabled = jenisPembelian != selectLabel && totalBayar > 0,
+            enabled = jenisPembelian != selectLabel && totalBayar > 0 && !isLoading,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = colorScheme.primary,
@@ -705,7 +711,16 @@ fun ScreenContent(
                 disabledContentColor = colorScheme.onPrimary.copy(alpha = 0.5f)
             )
         ) {
-            Text(stringResource(R.string.calculate))
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = colorScheme.onPrimary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Menyimpan...")
+            } else {
+                Text(stringResource(R.string.calculate))
+            }
         }
 
         Spacer(Modifier.height(12.dp))

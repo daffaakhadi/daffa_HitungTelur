@@ -5,6 +5,7 @@ import kotlinx.coroutines.launch
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -50,6 +51,7 @@ import com.daffa0050.assesment1.util.SettingsDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.Alignment
+import coil.request.ImageRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,8 +204,6 @@ fun ListPemesananScreen(
     }
 }
 
-
-
 @Composable
 private fun PemesananItem(
     item: Pemesanan,
@@ -216,17 +216,62 @@ private fun PemesananItem(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            if (!item.eggImage.isNullOrBlank()) {
-                Log.d("UI", "eggImage yang akan ditampilkan: ${item.eggImage}")
+            // Debug logging - lihat di Logcat
+            Log.d("PemesananItem", "Raw eggImage: ${item.eggImage}")
+
+            val imageUrl = item.eggImage?.let { rawUrl ->
+                val finalUrl = when {
+                    rawUrl.startsWith("https://") -> rawUrl
+                    rawUrl.startsWith("http://") -> rawUrl.replace("http://", "https://")
+                    rawUrl.startsWith("/") -> "https://egg-api.sendiko.my.id$rawUrl"
+                    rawUrl.isNotEmpty() -> "https://egg-api.sendiko.my.id/$rawUrl"
+                    else -> null
+                }
+                Log.d("PemesananItem", "Final URL: $finalUrl")
+                finalUrl
+            }
+
+            // Tampilkan gambar dengan debug info
+            if (imageUrl != null) {
+                Log.d("PemesananItem", "Attempting to load image: $imageUrl")
+
                 AsyncImage(
-                    model = item.eggImage,
+                    model = ImageRequest.Builder(context)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .listener(
+                            onStart = { Log.d("PemesananItem", "Image loading started") },
+                            onSuccess = { _, _ -> Log.d("PemesananItem", "Image loaded successfully") },
+                            onError = { _, error -> Log.e("PemesananItem", "Image load error: ${error.throwable.message}") }
+                        )
+                        .build(),
                     contentDescription = "Gambar Telur",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Gray.copy(alpha = 0.3f)), // Background untuk debug
                     contentScale = ContentScale.Crop
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+            } else {
+                // Tampilkan jika tidak ada URL
+                Log.d("PemesananItem", "No valid image URL found")
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Gray.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No Image Available",
+                        color = Color.Gray
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -269,7 +314,6 @@ private fun PemesananItem(
         }
     }
 }
-
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
