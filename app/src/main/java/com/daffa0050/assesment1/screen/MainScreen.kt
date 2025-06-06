@@ -146,10 +146,9 @@ fun MainScreen(navController: NavHostController) {
     var profilDialog by remember { mutableStateOf(false) }
     val resolver = context.contentResolver
 
-    var croppedBitmap by rememberSaveable { mutableStateOf<Bitmap?>(null) }
+    var croppedBitmap: Bitmap? by remember { mutableStateOf(null) }
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = CropImageContract()
+    val launcher = rememberLauncherForActivityResult(CropImageContract()
     ) { result ->
         croppedBitmap = getCroppedImage(resolver, result)
     }
@@ -347,7 +346,8 @@ fun ScreenContent(
     modifier: Modifier = Modifier,
     viewModel: PemesananViewModel,
     colorScheme: AppColorScheme,
-    croppedBitmap: Bitmap?
+    croppedBitmap: Bitmap?,
+    onImageReset: () -> Unit = {} // Tambahkan callback untuk reset image
 ) {
     val context = LocalContext.current
     val retailLabel = stringResource(R.string.retail)
@@ -666,7 +666,7 @@ fun ScreenContent(
                         purchaseType = if (jenisPembelian == retailLabel) "Eceran" else "Grosir",
                         amount = if (jenisPembelian == retailLabel) kg.toDoubleOrNull()?.toInt() ?: 0 else grosirKg.split(" ")[0].toInt(),
                         total = totalBayar,
-                        eggImage = null, // Akan diisi oleh ViewModel setelah upload
+                        image = null, // Akan diisi oleh ViewModel setelah upload
                         createdAt = null,
                         updatedAt = null
                     )
@@ -689,6 +689,9 @@ fun ScreenContent(
                             jenisPembelian = selectLabel
                             totalBayar = 0
                             showShareButton = true
+
+                            // Reset gambar melalui callback
+                            onImageReset()
 
                         } catch (e: Exception) {
                             Toast.makeText(

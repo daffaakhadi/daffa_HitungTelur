@@ -52,12 +52,27 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
 
-    suspend fun updatePemesanan(pemesanan: Pemesanan) {
-        repository.dao.updatePemesanan(pemesanan)
+    fun deletePemesanan(userId: String, id: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.deletePemesanan("Bearer $userId", id)
+                if (response.status.toIntOrNull() == 200) {
+                    repository.dao.deletePemesanan(id.toInt())
+                    onSuccess()
+                    sinkronisasi(userId)
+                } else {
+                    onError("Gagal menghapus data di server: ${response.message}")
+                }
+            } catch (e: Exception) {
+                onError("Error: ${e.message}")
+            }
+        }
     }
 
-    suspend fun deletePemesanan(id: Int) {
-        repository.dao.deletePemesanan(id)
+    fun updatePemesanan(pemesanan: Pemesanan) {
+        viewModelScope.launch {
+            repository.dao.updatePemesanan(pemesanan)
+        }
     }
 
     fun getPemesananById(id: Int): StateFlow<Pemesanan?> {

@@ -5,6 +5,7 @@ import kotlinx.coroutines.launch
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,7 +23,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,7 +54,10 @@ import com.daffa0050.assesment1.util.SettingsDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
 import coil.request.ImageRequest
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Warning
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -217,99 +223,191 @@ private fun PemesananItem(
         Column(modifier = Modifier.padding(16.dp)) {
 
             // Debug logging - lihat di Logcat
-            Log.d("PemesananItem", "Raw eggImage: ${item.eggImage}")
+            Log.d("PemesananItem", "Raw eggImage: ${item.image}")
 
-            val imageUrl = item.eggImage?.let { rawUrl ->
-                val finalUrl = when {
-                    rawUrl.startsWith("https://") -> rawUrl
-                    rawUrl.startsWith("http://") -> rawUrl.replace("http://", "https://")
-                    rawUrl.startsWith("/") -> "https://egg-api.sendiko.my.id$rawUrl"
-                    rawUrl.isNotEmpty() -> "https://egg-api.sendiko.my.id/$rawUrl"
-                    else -> null
-                }
-                Log.d("PemesananItem", "Final URL: $finalUrl")
-                finalUrl
-            }
+            val imageUrl = item.image
 
-            // Tampilkan gambar dengan debug info
-            if (imageUrl != null) {
-                Log.d("PemesananItem", "Attempting to load image: $imageUrl")
 
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .listener(
-                            onStart = { Log.d("PemesananItem", "Image loading started") },
-                            onSuccess = { _, _ -> Log.d("PemesananItem", "Image loaded successfully") },
-                            onError = { _, error -> Log.e("PemesananItem", "Image load error: ${error.throwable.message}") }
-                        )
-                        .build(),
-                    contentDescription = "Gambar Telur",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.Gray.copy(alpha = 0.3f)), // Background untuk debug
-                    contentScale = ContentScale.Crop
-                )
+            // Tampilkan gambar dengan loading state dan error handling yang lebih baik
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Gray.copy(alpha = 0.1f))
+            ) {
+                if (imageUrl != null) {
+                    Log.d("PemesananItem", "Attempting to load image: $imageUrl")
 
-                Spacer(modifier = Modifier.height(8.dp))
-            } else {
-                // Tampilkan jika tidak ada URL
-                Log.d("PemesananItem", "No valid image URL found")
+                    var isLoading by remember { mutableStateOf(true) }
+                    var hasError by remember { mutableStateOf(false) }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.Gray.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No Image Available",
-                        color = Color.Gray
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .listener(
+                                onStart = {
+                                    Log.d("PemesananItem", "Image loading started")
+                                    isLoading = true
+                                    hasError = false
+                                },
+                                onSuccess = { _, _ ->
+                                    Log.d("PemesananItem", "Image loaded successfully")
+                                    isLoading = false
+                                    hasError = false
+                                },
+                                onError = { _, error ->
+                                    Log.e("PemesananItem", "Image load error: ${error.throwable.message}")
+                                    isLoading = false
+                                    hasError = true
+                                }
+                            )
+                            .build(),
+                        contentDescription = "Gambar Telur",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
-                }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    // Loading indicator
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(32.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    // Error overlay
+                    if (hasError) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Gray.copy(alpha = 0.8f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = "Image Error",
+                                    modifier = Modifier.size(32.dp),
+                                    tint = Color.White
+                                )
+                                Text(
+                                    text = "Gagal memuat gambar",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+                        }
+                    }
+
+                } else {
+                    // Tampilkan jika tidak ada URL
+                    Log.d("PemesananItem", "No valid image URL found")
+
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountBox,
+                                contentDescription = "No Image",
+                                modifier = Modifier.size(48.dp),
+                                tint = Color.Gray
+                            )
+                            Text(
+                                text = "Gambar tidak tersedia",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                }
             }
 
-            Text(text = stringResource(id = R.string.label_nama, item.customerName))
-            Text(text = stringResource(id = R.string.label_alamat, item.customerAddress))
-            Text(text = stringResource(id = R.string.label_jenis, item.purchaseType))
-            Text(text = stringResource(id = R.string.label_jumlah, item.amount))
-            Text(text = stringResource(id = R.string.label_total_harga, item.total))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(onClick = {
-                val shareText = context.getString(
-                    R.string.share_text,
-                    item.customerName,
-                    item.customerAddress,
-                    item.purchaseType,
-                    item.amount,
-                    item.total.toString()
+            // Informasi pemesanan
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(text = stringResource(id = R.string.label_nama, item.customerName))
+                Text(text = stringResource(id = R.string.label_alamat, item.customerAddress))
+                Text(text = stringResource(id = R.string.label_jenis, item.purchaseType))
+                Text(text = stringResource(id = R.string.label_jumlah, item.amount))
+                Text(
+                    text = stringResource(id = R.string.label_total_harga, item.total),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
                 )
-                val intent = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, shareText)
-                }
-                context.startActivity(
-                    Intent.createChooser(intent, context.getString(R.string.share_title))
-                )
-            }) {
-                Text(stringResource(id = R.string.button_share))
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Button(onClick = {
-                navController.navigate("edit_pemesanan/${item.id}")
-            }) {
-                Text("Edit")
+            // Tombol aksi
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        val shareText = context.getString(
+                            R.string.share_text,
+                            item.customerName,
+                            item.customerAddress,
+                            item.purchaseType,
+                            item.amount,
+                            item.total.toString()
+                        )
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        context.startActivity(
+                            Intent.createChooser(intent, context.getString(R.string.share_title))
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(stringResource(id = R.string.button_share))
+                }
+
+                Button(
+                    onClick = {
+                        navController.navigate("edit_pemesanan/${item.id}")
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Edit")
+                }
             }
         }
     }
@@ -359,6 +457,9 @@ private fun PemesananItem(
         val cancelText = stringResource(id = R.string.cancel)
         val confirmDeleteText = stringResource(id = R.string.confirm_delete)
 
+        val context = LocalContext.current
+        val userId = "id_login_pengguna"
+
         LaunchedEffect(pemesanan) {
             pemesanan?.let {
                 nama = it.customerName
@@ -376,11 +477,18 @@ private fun PemesananItem(
                 confirmButton = {
                     Button(
                         onClick = {
-                            scope.launch {
-                                viewModel.deletePemesanan(id)
-                                showDeleteDialog = false
-                                navController.popBackStack()
-                            }
+                            viewModel.deletePemesanan(
+                                userId = userId,
+                                id = id.toString(),
+                                onSuccess = {
+                                    showDeleteDialog = false
+                                    navController.popBackStack() // balik ke list
+                                },
+                                onError = { errorMsg ->
+                                    Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                                    showDeleteDialog = false
+                                }
+                            )
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
@@ -558,7 +666,7 @@ private fun PemesananItem(
                                 purchaseType = jenis,
                                 amount = jumlahInt,
                                 total = totalHarga,
-                                eggImage = null,
+                                image = null,
                                 createdAt = null,
                                 updatedAt = null
                             )

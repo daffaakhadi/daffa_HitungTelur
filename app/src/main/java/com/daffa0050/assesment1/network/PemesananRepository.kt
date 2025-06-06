@@ -71,7 +71,7 @@ class PemesananRepository(
                 )
 
                 if (response.status == "200" && response.data != null) {
-                    Log.d("Repo", "eggImage dari server: ${response.data.eggImage}")
+                    Log.d("Repo", "eggImage dari server: ${response.data.image}")
                     dao.insert(response.data)
                 } else {
                     dao.insert(pemesanan)
@@ -83,6 +83,9 @@ class PemesananRepository(
         } else {
             dao.insert(pemesanan)
         }
+    }
+    suspend fun updatePemesanan(pemesanan: Pemesanan) {
+        dao.updatePemesanan(pemesanan)
     }
 
 
