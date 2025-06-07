@@ -254,7 +254,7 @@ private fun PemesananItem(
 
                     AsyncImage(
                         model = ImageRequest.Builder(context)
-                            .data(imageUrl)
+                            .data(imageUrl.replace("http", "https"))
                             .crossfade(true)
                             .listener(
                                 onStart = {
@@ -573,7 +573,8 @@ fun EditPemesananScreen(
                             )
                         } else if (!pemesanan?.image.isNullOrEmpty()) {
                             AsyncImage(
-                                model = ImageRequest.Builder(context).data(pemesanan?.image).crossfade(true).build(),
+                                model = ImageRequest.Builder(context).data(pemesanan?.image?.replace("http","https"))
+                                    .crossfade(true).build(),
                                 contentDescription = "Gambar Saat Ini",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
