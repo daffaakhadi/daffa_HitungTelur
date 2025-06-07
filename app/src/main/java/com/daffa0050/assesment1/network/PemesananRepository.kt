@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.daffa0050.assesment1.database.PemesananDao
+import com.daffa0050.assesment1.model.OpStatus
 import com.daffa0050.assesment1.model.Pemesanan
 import com.daffa0050.assesment1.util.NetworkUtils
 import kotlinx.coroutines.Dispatchers
@@ -93,7 +94,8 @@ class PemesananRepository(
         amount: Int,
         total: Int,
         bitmap: Bitmap?
-    ) {
+    ): OpStatus {
+
         val token = "Bearer ${authPref.getToken()}"
 
         val customerNameBody = customerName.toRequestBody("text/plain".toMediaType())
@@ -101,7 +103,6 @@ class PemesananRepository(
         val purchaseTypeBody = purchaseType.toRequestBody("text/plain".toMediaType())
         val amountBody = amount.toString().toRequestBody("text/plain".toMediaType())
         val totalBody = total.toString().toRequestBody("text/plain".toMediaType())
-        val methodBody = "PUT".toRequestBody("text/plain".toMediaType())
 
         val imagePart = bitmap?.let {
             val file = createTempFile("upload", ".jpg")
@@ -114,7 +115,7 @@ class PemesananRepository(
                 .let { body -> MultipartBody.Part.createFormData("image", file.name, body) }
         }
 
-        apiService.updatePemesanan(
+        return apiService.updatePemesanan(
             id = id,
             token = token,
             customerName = customerNameBody,
@@ -122,10 +123,10 @@ class PemesananRepository(
             purchaseType = purchaseTypeBody,
             amount = amountBody,
             total = totalBody,
-            method = methodBody,
             image = imagePart
         )
     }
+
 
     suspend fun sinkronDariServer(userId: String) {
         if (NetworkUtils.isOnline(context)) {

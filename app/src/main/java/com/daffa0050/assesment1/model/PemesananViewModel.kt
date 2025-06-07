@@ -84,8 +84,8 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
     ) {
         viewModelScope.launch {
             try {
-                // Panggil fungsi di repository yang akan menangani logika API
-                repository.updatePemesananApi(
+                // Panggil fungsi repository yang sudah diubah untuk return OpStatus
+                val response = repository.updatePemesananApi(
                     id = id,
                     customerName = customerName,
                     customerAddress = customerAddress,
@@ -94,16 +94,19 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
                     total = total,
                     bitmap = image
                 )
-                // Jika berhasil, panggil callback onSuccess untuk navigasi kembali
-                onSuccess()
-                // Lakukan sinkronisasi ulang untuk memastikan data di UI terupdate
-                sinkronisasi()
+
+                if (response.status == "200") {
+                    onSuccess()
+                    sinkronisasi() // ambil data terbaru dari server dan update DB
+                } else {
+                    onError(response.message ?: "Update gagal")
+                }
             } catch (e: Exception) {
-                // Jika gagal, panggil callback onError untuk menampilkan pesan di UI
                 onError(e.message ?: "Terjadi kesalahan yang tidak diketahui")
             }
         }
     }
+
 
     fun getPemesananById(id: Int): StateFlow<Pemesanan?> {
         return repository.dao.getPemesananById(id)

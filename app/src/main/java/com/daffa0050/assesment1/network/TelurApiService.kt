@@ -13,6 +13,7 @@
     import retrofit2.http.Header
     import retrofit2.http.Multipart
     import retrofit2.http.POST
+    import retrofit2.http.PUT
     import retrofit2.http.Part
     import retrofit2.http.Path
 
@@ -42,7 +43,7 @@
         ): OpStatus
 
         @Multipart
-        @POST("eggs/{id}")
+        @PUT("eggs/{id}")
         suspend fun updatePemesanan(
             @Path("id") id: Int,
             @Header("Authorization") token: String,
@@ -51,9 +52,9 @@
             @Part("purchaseType") purchaseType: RequestBody,
             @Part("amount") amount: RequestBody,
             @Part("total") total: RequestBody,
-            @Part("_method") method: RequestBody, // <- ini yang wajib untuk menyatakan PUT
             @Part image: MultipartBody.Part?
         ): OpStatus
+
 
 
         companion object {
