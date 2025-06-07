@@ -444,10 +444,14 @@ fun EditPemesananScreen(
     var jenis by remember { mutableStateOf(retailValue) }
     var jumlah by remember { mutableStateOf("") }
 
+
     // State untuk UI (dropdown, dialog, error)
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val grosirOptions = listOf(15, 30, 45, 60, 75, 90)
+    var expandedJumlah by remember { mutableStateOf(false) }
+
 
     // State untuk menampung gambar BARU yang dipilih pengguna
     var newImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -628,13 +632,48 @@ fun EditPemesananScreen(
                         }
                         Spacer(modifier = Modifier.matchParentSize().clickable { expanded = true })
                     }
-                    OutlinedTextField(
-                        value = jumlah,
-                        onValueChange = { jumlah = it },
-                        label = { Text("Jumlah (Kg)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
+                    if (jenis == wholesaleValue) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = jumlah,
+                                onValueChange = {},
+                                label = { Text("Jumlah (Kg)") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { expandedJumlah = true }, // Pastikan ini di luar .onValueChange
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                                }
+                            )
+                            DropdownMenu(
+                                expanded = expandedJumlah,
+                                onDismissRequest = { expandedJumlah = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                grosirOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text("$option Kg") },
+                                        onClick = {
+                                            jumlah = option.toString()
+                                            expandedJumlah = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        OutlinedTextField(
+                            value = jumlah,
+                            onValueChange = { jumlah = it },
+                            label = { Text("Jumlah (Kg)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+                    }
                 }
             }
 
@@ -647,9 +686,13 @@ fun EditPemesananScreen(
                             errorMessage = "Semua field harus diisi dengan benar."
                             return@Button
                         }
-                        val totalHarga = if (jenis == retailValue) jumlahInt * 25000 else (jumlahInt / 15) * 330000
 
-                        // Panggil ViewModel untuk melakukan update
+                        val totalHarga = if (jenis == retailValue) {
+                            jumlahInt * 25000
+                        } else {
+                            jumlahInt / 15 * 330000 // sudah aman karena dropdown hanya 15,30,...
+                        }
+
                         scope.launch {
                             viewModel.updatePemesananWithImage(
                                 id = id,
@@ -673,6 +716,7 @@ fun EditPemesananScreen(
                 ) {
                     Text("Update Data")
                 }
+
                 Button(
                     onClick = { showDeleteDialog = true },
                     modifier = Modifier.fillMaxWidth(),
