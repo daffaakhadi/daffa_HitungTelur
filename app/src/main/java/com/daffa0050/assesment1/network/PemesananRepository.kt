@@ -21,72 +21,68 @@ import java.io.FileOutputStream
 
 
 
-class PemesananRepository(
-    private val apiService: TelurApiService,
-    private val authPref: AuthPreference,
-    val dao: PemesananDao,
-    private val context: Context
-) {
-    val semuaPemesanan: Flow<List<Pemesanan>> = dao.getAll()
+    class PemesananRepository(
+        private val apiService: TelurApiService,
+        private val authPref: AuthPreference,
+        val dao: PemesananDao,
+        private val context: Context
+    ) {
+        val semuaPemesanan: Flow<List<Pemesanan>> = dao.getAll()
 
-    suspend fun tambahPemesanan(pemesanan: Pemesanan, bitmap: Bitmap?) {
-        if (NetworkUtils.isOnline(context)) {
-            try {
-                val userId = "guest"
+        suspend fun tambahPemesanan(pemesanan: Pemesanan, userId: String, bitmap: Bitmap?) {
 
-                // Siapkan imagePart
-                val imagePart = withContext(Dispatchers.IO) {
-                    if (bitmap != null) {
-                        val file = File(context.cacheDir, "upload.jpg")
-                        val outputStream = FileOutputStream(file)
-                        val stream = ByteArrayOutputStream()
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-                        val imageByteArray = stream.toByteArray()
+            if (NetworkUtils.isOnline(context)) {
+                try {
+                    val imagePart = withContext(Dispatchers.IO) {
+                        if (bitmap != null) {
+                            val file = File(context.cacheDir, "upload.jpg")
+                            val outputStream = FileOutputStream(file)
+                            val stream = ByteArrayOutputStream()
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                            outputStream.write(stream.toByteArray())
 
-                        outputStream.use {
-                            it.write(imageByteArray)
+                            MultipartBody.Part.createFormData(
+                                "image",
+                                file.name,
+                                file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                            )
+                        } else {
+                            MultipartBody.Part.createFormData(
+                                "image",
+                                "telur.jpg",
+                                ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull())
+                            )
                         }
-
-                        MultipartBody.Part.createFormData(
-                            "image",
-                            file.name,
-                            file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                        )
-                    } else {
-                        MultipartBody.Part.createFormData(
-                            "image",
-                            "telur.jpg",
-                            ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull())
-                        )
                     }
+
+                    val response = apiService.postPemesanan(
+                        userId = userId.toRequestBody(),
+                        customerName = pemesanan.customerName.toRequestBody(),
+                        customerAddress = pemesanan.customerAddress.toRequestBody(),
+                        purchaseType = pemesanan.purchaseType.toRequestBody(),
+                        amount = pemesanan.amount.toString().toRequestBody(),
+                        total = pemesanan.total.toString().toRequestBody(),
+                        image = imagePart
+                    )
+
+                    if (response.status == "200" && response.data != null) {
+                        // Tambahkan userId ke data dari server sebelum simpan ke Room
+                        val saved = response.data.copy(userId = userId)
+                        dao.insert(saved)
+                    } else {
+                        dao.insert(pemesanan.copy(userId = userId))
+                    }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    dao.insert(pemesanan.copy(userId = userId))
                 }
-
-                // Kirim ke API
-                val response = apiService.postPemesanan(
-                    userId = userId,
-                    customerName = pemesanan.customerName.toRequestBody("text/plain".toMediaType()),
-                    customerAddress = pemesanan.customerAddress.toRequestBody("text/plain".toMediaType()),
-                    purchaseType = pemesanan.purchaseType.toRequestBody("text/plain".toMediaType()),
-                    amount = pemesanan.amount.toString().toRequestBody("text/plain".toMediaType()),
-                    total = pemesanan.total.toString().toRequestBody("text/plain".toMediaType()),
-                    image = imagePart
-                )
-
-                if (response.status == "200" && response.data != null) {
-                    Log.d("Repo", "eggImage dari server: ${response.data.image}")
-                    dao.insert(response.data)
-                } else {
-                    dao.insert(pemesanan)
-                }
-
-            } catch (e: Exception) {
-                dao.insert(pemesanan)
+            } else {
+                dao.insert(pemesanan.copy(userId = userId))
             }
-        } else {
-            dao.insert(pemesanan)
         }
-    }
     suspend fun updatePemesananApi(
+        userId: String,
         id: Int,
         customerName: String,
         customerAddress: String,
@@ -97,12 +93,12 @@ class PemesananRepository(
     ): OpStatus {
 
         val token = "Bearer ${authPref.getToken()}"
-
-        val customerNameBody = customerName.toRequestBody("text/plain".toMediaType())
-        val customerAddressBody = customerAddress.toRequestBody("text/plain".toMediaType())
-        val purchaseTypeBody = purchaseType.toRequestBody("text/plain".toMediaType())
-        val amountBody = amount.toString().toRequestBody("text/plain".toMediaType())
-        val totalBody = total.toString().toRequestBody("text/plain".toMediaType())
+        val userIdBody = userId.toRequestBody()
+        val customerNameBody = customerName.toRequestBody()
+        val customerAddressBody = customerAddress.toRequestBody()
+        val purchaseTypeBody = purchaseType.toRequestBody()
+        val amountBody = amount.toString().toRequestBody()
+        val totalBody = total.toString().toRequestBody()
 
         val imagePart = bitmap?.let {
             val file = createTempFile("upload", ".jpg")
@@ -117,6 +113,7 @@ class PemesananRepository(
 
         return apiService.updatePemesanan(
             id = id,
+            userId = userIdBody,
             token = token,
             customerName = customerNameBody,
             customerAddress = customerAddressBody,

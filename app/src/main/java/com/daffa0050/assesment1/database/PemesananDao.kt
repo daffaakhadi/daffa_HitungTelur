@@ -37,5 +37,10 @@ interface PemesananDao {
 
     @Delete
     suspend fun delete(pemesanan: Pemesanan)
-}
 
+    @Query("DELETE FROM pemesanan WHERE userId = :userId")
+    suspend fun clearByUserId(userId: String)
+
+    @Query("SELECT * FROM pemesanan WHERE userId = :userId ORDER BY id DESC")
+    suspend fun getByUserId(userId: String): List<Pemesanan>
+}

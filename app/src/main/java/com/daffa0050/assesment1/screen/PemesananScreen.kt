@@ -68,6 +68,7 @@ import coil.request.ImageRequest
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,12 +83,16 @@ fun ListPemesananScreen(
     val totalGrosir by viewModel.totalGrosir.collectAsState()
     val status by viewModel.status.collectAsState()
     val context = LocalContext.current
+    val currentUserId by viewModel.currentUserId.collectAsStateWithLifecycle()
 
     var expanded by remember { mutableStateOf(false) }
 
-    // Panggil sinkronisasi sekali saat screen pertama kali dibuka
-    LaunchedEffect(Unit) {
-        viewModel.sinkronisasi(userId = "guest") // ganti sesuai userId sesungguhnya
+    LaunchedEffect(currentUserId) {
+        val userId = currentUserId?.email
+
+        if (!userId.isNullOrBlank()) {
+            viewModel.sinkronisasi(userId = userId)
+        } // ganti sesuai userId sesungguhnya
     }
 
     Scaffold(
@@ -452,6 +457,7 @@ fun EditPemesananScreen(
     val grosirOptions = listOf(15, 30, 45, 60, 75, 90)
     var expandedJumlah by remember { mutableStateOf(false) }
 
+    val currentUserId by viewModel.currentUserId.collectAsStateWithLifecycle()
 
     // State untuk menampung gambar BARU yang dipilih pengguna
     var newImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -692,31 +698,40 @@ fun EditPemesananScreen(
                         } else {
                             jumlahInt / 15 * 330000 // sudah aman karena dropdown hanya 15,30,...
                         }
-
+                        val userId = currentUserId?.email
                         scope.launch {
-                            viewModel.updatePemesananWithImage(
-                                id = id,
-                                customerName = nama,
-                                customerAddress = alamat,
-                                purchaseType = jenis,
-                                amount = jumlahInt,
-                                total = totalHarga,
-                                image = newImageBitmap,
-                                onSuccess = {
-                                    Toast.makeText(context, "Data berhasil diperbarui", Toast.LENGTH_SHORT).show()
-                                    navController.popBackStack()
-                                },
-                                onError = { errorMsg ->
-                                    errorMessage = errorMsg
-                                }
-                            )
+                            if (userId != null) {
+                                viewModel.updatePemesananWithImage(
+                                    userId = userId,
+                                    id = id,
+                                    customerName = nama,
+                                    customerAddress = alamat,
+                                    purchaseType = jenis,
+                                    amount = jumlahInt,
+                                    total = totalHarga,
+                                    image = newImageBitmap,
+                                    onSuccess = {
+                                        Toast.makeText(context, "Data berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                                        navController.popBackStack()
+                                    },
+                                    onError = { errorMsg ->
+                                        errorMessage = errorMsg
+                                    }
+                                )
+                            }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
                 ) {
                     Text("Update Data")
                 }
 
+// Beri sedikit jarak antar tombol
+                Spacer(modifier = Modifier.height(8.dp))
+
+// Tombol untuk Hapus Data
                 Button(
                     onClick = { showDeleteDialog = true },
                     modifier = Modifier.fillMaxWidth(),

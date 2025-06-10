@@ -4,12 +4,17 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
-class AppViewModelProvider(private val application: Application) : ViewModelProvider.Factory {
+class AppViewModelProvider(
+    private val application: Application,
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PemesananViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return PemesananViewModel(application) as T
+        return when {
+            modelClass.isAssignableFrom(PemesananViewModel::class.java) -> {
+                PemesananViewModel(application) as T
+            }
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

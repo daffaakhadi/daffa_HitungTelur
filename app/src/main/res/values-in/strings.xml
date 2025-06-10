@@ -82,5 +82,6 @@
     <string name="logout">Logout</string>
     <string name="tutup">Tutup</string>
     <string name="tambah_telur">Tambah telur</string>
+    <string name="relogin">Login Ulang</string>
 
 </resources>

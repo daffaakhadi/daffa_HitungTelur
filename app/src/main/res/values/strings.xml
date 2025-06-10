@@ -81,5 +81,6 @@
     <string name="logout">Logout</string>
     <string name="tutup">Close</string>
     <string name="tambah_telur">Add Egg</string>
+    <string name="relogin">Relogin</string>
 
 </resources>

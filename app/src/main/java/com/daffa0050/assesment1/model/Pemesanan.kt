@@ -9,6 +9,9 @@ data class Pemesanan(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0, // Auto-generate hanya digunakan saat Room insert lokal
 
+    @Json(name = "userId") // Pastikan cocok dengan field dari API
+    val userId: String,
+
     @Json(name = "customerName")
     val customerName: String,
 

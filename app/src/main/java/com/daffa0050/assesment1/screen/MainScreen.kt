@@ -65,6 +65,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 object PreferenceKeys {
     val THEME_COLOR = stringPreferencesKey("theme_color")
@@ -380,6 +381,7 @@ fun ScreenContent(
     var showShareButton by rememberSaveable { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
+    val currentUserId by viewModel.currentUserId.collectAsStateWithLifecycle()
 
     LaunchedEffect(kg, grosirKg, jenisPembelian) {
         totalBayar = when {
@@ -633,9 +635,17 @@ fun ScreenContent(
         }
 
         Spacer(Modifier.height(12.dp))
-
+        val userId = currentUserId?.email
         Button(
             onClick = {
+                if (userId.isNullOrBlank()) {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.relogin),
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@Button
+                }
                 namaPembeliError = if (namaPembeli.isEmpty()) context.getString(R.string.buyer_name_error) else ""
                 alamatPembeliError = if (alamatPembeli.isEmpty()) context.getString(R.string.buyer_address_error) else ""
 
@@ -659,8 +669,8 @@ fun ScreenContent(
                     }
 
                     isLoading = true
-
                     val pemesanan = Pemesanan(
+                        userId = userId,
                         customerName = namaPembeli,
                         customerAddress = alamatPembeli,
                         purchaseType = if (jenisPembelian == retailLabel) "Eceran" else "Grosir",
