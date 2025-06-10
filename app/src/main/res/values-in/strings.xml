@@ -21,7 +21,7 @@
     <string name="share_message">Halo, ini pemesanan telur kamu:\\nJenis: %1$s\\nJumlah: %2$s kg\\nTotal harga: Rp %3$d</string>
     <string name="article_1">Bagaimana cara menyimpan telur?</string>
     <string name="article_2">Manfaat Telur untuk Kesehatan</string>
-    <string name="article_3">Bagaimana cara menyimapan telur agar awet</string>
+    <string name="article_3">Bagaimana cara menyimpan telur agar awet</string>
     <string name="article_4">Telur Ayam Kampung vs Telur Ayam Negeri</string>
     <string name="buyer_name">Nama Pembeli</string>
     <string name="buyer_address">Alamat Pembeli</string>
@@ -72,8 +72,14 @@
     <string name="faq_answer_1">Hitung Telur adalah aplikasi yang digunakan untuk mencatat dan menghitung pemesanan telur, baik secara grosir maupun eceran.</string>
     <string name="faq_question_2">Siapa yang dapat menggunakan aplikasi ini?</string>
     <string name="faq_answer_2">Aplikasi ini dapat digunakan oleh penjual telur atau pengguna yang ingin mencatat transaksi pembelian dan penjualan telur dengan mudah.</string>
-    <string name="faq_question_3">Apakah data saya aman?</string>
-    <string name="faq_answer_3">Data disimpan secara lokal di perangkat menggunakan Room Database dan tidak dikirim ke server eksternal.</string>
+    <string name="faq_question_3">Apakah data pengguna disimpan secara aman?</string>
+    <string name="faq_answer_3">Ya, data pengguna tersimpan secara lokal maupun online dengan aman.</string>
+    <string name="faq_question_4">Apakah aplikasi bisa berjalan mode offline?</string>
+    <string name="faq_answer_4">Ya, aplikasi mendukung mode offline dengan menyimpan data secara lokal.</string>
+    <string name="faq_question_5">Apakah data tersimpan secara otomatis?</string>
+    <string name="faq_answer_5">Data akan disimpan otomatis ketika pengguna menekan tombol simpan atau submit.</string>
+    <string name="faq_question_6">Bagaimana cara mengganti tema tampilan?</string>
+    <string name="faq_answer_6">Kamu bisa mengganti tema tampilan melalui menu pengaturan atau dropdown tema di halaman utama.</string>
     <string name="fitur_dalam_pengembangan">Fitur ini sedang dalam pengembangan.</string>
     <string name="dialog_exit_message">Apakah Anda yakin ingin keluar?</string>
     <string name="yes">Iya</string>
@@ -83,5 +89,6 @@
     <string name="tutup">Tutup</string>
     <string name="tambah_telur">Tambah telur</string>
     <string name="relogin">Login Ulang</string>
+    <string name="faq_title">FAQ</string>
 
 </resources>
