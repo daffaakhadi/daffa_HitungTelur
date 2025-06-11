@@ -503,8 +503,6 @@ private fun EditPemesananForm(
     viewModel: PemesananViewModel,
     navController: NavHostController
 ) {
-    // Semua state sekarang aman diinisialisasi dengan data dari 'pemesanan'
-    // karena Composable ini hanya dipanggil jika 'pemesanan' tidak null.
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -518,7 +516,6 @@ private fun EditPemesananForm(
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    val grosirOptions = listOf(15, 30, 45, 60, 75, 90)
     var expandedJumlah by remember { mutableStateOf(false) }
 
     val currentUser by viewModel.currentUserId.collectAsStateWithLifecycle()
@@ -651,12 +648,7 @@ private fun EditPemesananForm(
                 }
 
                 OutlinedTextField(value = nama, onValueChange = { nama = it }, label = { Text("Nama Pembeli") }, modifier = Modifier.fillMaxWidth())
-
                 OutlinedTextField(value = alamat, onValueChange = { alamat = it }, label = { Text("Alamat Pembeli") }, modifier = Modifier.fillMaxWidth())
-
-
-
-// ... (Dropdown untuk Jenis Pembelian dan Jumlah tidak diubah, sudah baik)
 
                 Box {
 
@@ -721,37 +713,13 @@ private fun EditPemesananForm(
                             }
 
                         )
-
-                        DropdownMenu(
-
-                            expanded = expandedJumlah,
-
-                            onDismissRequest = { expandedJumlah = false },
-
-                            modifier = Modifier.fillMaxWidth()
-
-                        ) {
-
-                            grosirOptions.forEach { option ->
-
-                                DropdownMenuItem(
-
-                                    text = { Text("$option Kg") },
-
-                                    onClick = {
-
-                                        jumlah = option.toString()
-
-                                        expandedJumlah = false
-
-                                    }
-
-                                )
-
-                            }
-
-                        }
-
+                        OutlinedTextField(
+                            value = jumlah,
+                            onValueChange = { jumlah = it },
+                            label = { Text("Jumlah (Kg)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
                     }
 
                 } else {
@@ -793,11 +761,7 @@ private fun EditPemesananForm(
                         errorMessage = "Semua field harus diisi dengan benar."
 
                         return@Button
-
                     }
-
-
-
                     val totalHarga = if (jenis == retailValue) {
 
                         jumlahInt * 25000
@@ -866,13 +830,9 @@ private fun EditPemesananForm(
 
             }
 
-
-
 // Beri sedikit jarak antar tombol
 
             Spacer(modifier = Modifier.height(8.dp))
-
-
 
 // Tombol untuk Hapus Data
 
@@ -889,9 +849,6 @@ private fun EditPemesananForm(
                 Text("Hapus Data")
 
             }
-
         }
-
     }
-
 }

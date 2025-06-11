@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.daffa0050.assesment1.model.Pemesanan
 import kotlinx.coroutines.flow.Flow
@@ -46,4 +47,13 @@ interface PemesananDao {
 
     @Query("SELECT * FROM pemesanan WHERE isSynced = 0") // 0 berarti false untuk SQLite
     suspend fun getUnsyncedPemesanan(): List<Pemesanan>
+
+    @Query("DELETE FROM pemesanan WHERE userId = :userId AND isSynced = 1")
+    suspend fun deleteSyncedForUser(userId: String)
+
+    @Transaction
+    suspend fun syncFromServer(userId: String, pemesananFromServer: List<Pemesanan>) {
+        deleteSyncedForUser(userId)
+        insertAll(pemesananFromServer.map { it.copy(isSynced = true) })
+    }
 }

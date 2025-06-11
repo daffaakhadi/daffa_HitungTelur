@@ -197,7 +197,7 @@ import java.io.FileOutputStream
                 val daftarPemesanan = response.data
 
                 if (daftarPemesanan.isNotEmpty()) {
-                    dao.insertAll(daftarPemesanan)
+                    dao.syncFromServer(userId,daftarPemesanan)
                 }
             } catch (e: Exception) {
                 Log.e("Sinkronisasi", "Gagal sinkron dari server: ${e.message}")

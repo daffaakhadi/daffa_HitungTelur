@@ -25,6 +25,8 @@ import com.daffa0050.assesment1.R
 import com.daffa0050.assesment1.model.UserData
 import com.daffa0050.assesment1.util.SettingsDataStore
 import kotlinx.coroutines.launch
+import kotlin.system.exitProcess
+
 
 @Composable
 fun WelcomeScreen(
@@ -36,6 +38,7 @@ fun WelcomeScreen(
     val mainColor = Color(0xFFD7A86E)
     val white = Color.White
     val userData by dataStore.userFlow.collectAsState(initial = UserData("", "", ""))
+    var showExitDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -139,9 +142,46 @@ fun WelcomeScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            WelcomeButton(
+                text = stringResource(id = R.string.keluar_aplikasi),
+                textColor = Color.White,
+                backgroundColor = Color(0xFFB00020)
+            ) {
+                showExitDialog = true
+            }
+
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+        if (showExitDialog) {
+            AlertDialog(
+                onDismissRequest = { showExitDialog = false },
+                title = {
+                    Text(text = stringResource(id = R.string.konfirmasi_keluar))
+                },
+                text = {
+                    Text(text = stringResource(id = R.string.pertanyaan_keluar))
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showExitDialog = false
+                        exitProcess(0)
+                    }) {
+                        Text(text = stringResource(id = R.string.ya))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showExitDialog = false
+                    }) {
+                        Text(text = stringResource(id = R.string.tidak))
+                    }
+                }
+            )
+        }
+
     }
 }
 
