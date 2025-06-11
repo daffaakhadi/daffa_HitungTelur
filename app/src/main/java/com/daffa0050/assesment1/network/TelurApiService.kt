@@ -2,7 +2,6 @@ package com.daffa0050.assesment1.network
 
 import com.daffa0050.assesment1.model.ApiResponse
 import com.daffa0050.assesment1.model.OpStatus
-import com.daffa0050.assesment1.model.Pemesanan
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.MultipartBody
@@ -49,7 +48,6 @@ interface TelurApiService {
     suspend fun updatePemesanan(
         @Path("id") id: Int,
         @Part("userId") userId: RequestBody,
-        @Header("Authorization") token: String,
         @Part("customerName") customerName: RequestBody,
         @Part("customerAddress") customerAddress: RequestBody,
         @Part("purchaseType") purchaseType: RequestBody,

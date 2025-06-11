@@ -3,10 +3,16 @@ package com.daffa0050.assesment1.network
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.daffa0050.assesment1.database.PemesananDao
 import com.daffa0050.assesment1.model.OpStatus
 import com.daffa0050.assesment1.model.Pemesanan
 import com.daffa0050.assesment1.util.NetworkUtils
+import com.daffa0050.assesment1.util.SyncWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -19,71 +25,102 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
-
-
     class PemesananRepository(
         private val apiService: TelurApiService,
-        private val authPref: AuthPreference,
         val dao: PemesananDao,
         private val context: Context
     ) {
-        val semuaPemesanan: Flow<List<Pemesanan>> = dao.getAll()
 
         suspend fun tambahPemesanan(pemesanan: Pemesanan, userId: String, bitmap: Bitmap?) {
 
-            if (NetworkUtils.isOnline(context)) {
-                try {
-                    val imagePart = withContext(Dispatchers.IO) {
-                        if (bitmap != null) {
-                            val file = File(context.cacheDir, "upload.jpg")
-                            val outputStream = FileOutputStream(file)
-                            val stream = ByteArrayOutputStream()
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-                            outputStream.write(stream.toByteArray())
+            val localPemesanan = pemesanan.copy(userId = userId, isSynced = false)
 
-                            MultipartBody.Part.createFormData(
-                                "image",
-                                file.name,
-                                file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                            )
-                        } else {
-                            MultipartBody.Part.createFormData(
-                                "image",
-                                "telur.jpg",
-                                ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull())
-                            )
-                        }
-                    }
+            dao.insert(localPemesanan)
 
-                    val response = apiService.postPemesanan(
-                        userId = userId.toRequestBody(),
-                        customerName = pemesanan.customerName.toRequestBody(),
-                        customerAddress = pemesanan.customerAddress.toRequestBody(),
-                        purchaseType = pemesanan.purchaseType.toRequestBody(),
-                        amount = pemesanan.amount.toString().toRequestBody(),
-                        total = pemesanan.total.toString().toRequestBody(),
-                        image = imagePart
-                    )
+            if (!NetworkUtils.isOnline(context)) {
 
-                    if (response.status == "200" && response.data != null) {
-                        // Tambahkan userId ke data dari server sebelum simpan ke Room
-                        val saved = response.data.copy(userId = userId)
-                        dao.insert(saved)
+                scheduleSync()
+
+                return}
+
+            try {
+
+                val imagePart = withContext(Dispatchers.IO) {
+
+                    if (bitmap != null) {
+
+                        val file = File(context.cacheDir, "upload.jpg")
+
+                        val outputStream = FileOutputStream(file)
+
+                        val stream = ByteArrayOutputStream()
+
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+
+                        outputStream.write(stream.toByteArray())
+
+
+
+                        MultipartBody.Part.createFormData(
+
+                            "image",
+
+                            file.name,
+
+                            file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+
+                        )
+
                     } else {
-                        dao.insert(pemesanan.copy(userId = userId))
+
+                        MultipartBody.Part.createFormData(
+
+                            "image",
+
+                            "telur.jpg",
+
+                            ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull())
+
+                        )
+
                     }
 
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    dao.insert(pemesanan.copy(userId = userId))
                 }
-            } else {
-                dao.insert(pemesanan.copy(userId = userId))
+
+
+
+                val response = apiService.postPemesanan(
+
+                    userId = userId.toRequestBody(),
+
+                    customerName = pemesanan.customerName.toRequestBody(),
+
+                    customerAddress = pemesanan.customerAddress.toRequestBody(),
+
+                    purchaseType = pemesanan.purchaseType.toRequestBody(),
+
+                    amount = pemesanan.amount.toString().toRequestBody(),
+
+                    total = pemesanan.total.toString().toRequestBody(),
+
+                    image = imagePart
+                )
+                if (response.status == "200" && response.data != null) {
+                    dao.delete(localPemesanan)
+                    val serverPemesanan = response.data.copy(userId = userId, isSynced = true)
+                    dao.insert(serverPemesanan)
+
+                } else {
+                    scheduleSync()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                scheduleSync()
             }
         }
     suspend fun updatePemesananApi(
+        id : Int,
         userId: String,
-        id: Int,
         customerName: String,
         customerAddress: String,
         purchaseType: String,
@@ -92,7 +129,6 @@ import java.io.FileOutputStream
         bitmap: Bitmap?
     ): OpStatus {
 
-        val token = "Bearer ${authPref.getToken()}"
         val userIdBody = userId.toRequestBody()
         val customerNameBody = customerName.toRequestBody()
         val customerAddressBody = customerAddress.toRequestBody()
@@ -114,7 +150,6 @@ import java.io.FileOutputStream
         return apiService.updatePemesanan(
             id = id,
             userId = userIdBody,
-            token = token,
             customerName = customerNameBody,
             customerAddress = customerAddressBody,
             purchaseType = purchaseTypeBody,
@@ -123,18 +158,44 @@ import java.io.FileOutputStream
             image = imagePart
         )
     }
+        suspend fun tambahPemesananApiOnly(pemesanan: Pemesanan): OpStatus {
+            val mediaType = "text/plain".toMediaType()
+
+            val userIdBody = pemesanan.userId.toRequestBody(mediaType)
+            val customerNameBody = pemesanan.customerName.toRequestBody(mediaType)
+            val customerAddressBody = pemesanan.customerAddress.toRequestBody(mediaType)
+            val purchaseTypeBody = pemesanan.purchaseType.toRequestBody(mediaType)
+            val amountBody = pemesanan.amount.toString().toRequestBody(mediaType)
+            val totalBody = pemesanan.total.toString().toRequestBody(mediaType)
+
+
+            // Cek apakah ada path gambar lokal yang tersimpan
+            val imagePart = MultipartBody.Part.createFormData(
+                "image",
+                "no_image.jpg",
+                ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull())
+            )
+
+
+            return apiService.postPemesanan(
+                userId = userIdBody,
+                customerName = customerNameBody,
+                customerAddress = customerAddressBody,
+                purchaseType = purchaseTypeBody,
+                amount = amountBody,
+                total = totalBody,
+                image = imagePart
+            )
+        }
 
 
     suspend fun sinkronDariServer(userId: String) {
         if (NetworkUtils.isOnline(context)) {
             try {
-                // 1. Panggil API, hasilnya adalah objek ApiResponse
                 val response = apiService.getPemesanan(userId)
 
-                // 2. Ambil daftar pemesanan dari dalam properti .data
                 val daftarPemesanan = response.data
 
-                // 3. Simpan daftar yang sudah benar ini ke database
                 if (daftarPemesanan.isNotEmpty()) {
                     dao.insertAll(daftarPemesanan)
                 }
@@ -143,4 +204,23 @@ import java.io.FileOutputStream
             }
         }
     }
-}
+        fun getPemesananByUserId(userId: String): Flow<List<Pemesanan>> {
+            return dao.getPemesananByUserId(userId)
+        }
+        private fun scheduleSync() {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val syncWorkRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                .setConstraints(constraints)
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "sync_pemesanan_data",
+                ExistingWorkPolicy.KEEP,
+                syncWorkRequest
+            )
+            Log.d("PemesananRepository", "Sinkronisasi dijadwalkan.")
+        }
+    }

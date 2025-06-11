@@ -34,5 +34,9 @@ data class Pemesanan(
     val createdAt: String? = null,
 
     @Json(name = "updatedAt")
-    val updatedAt: String? = null
+    val updatedAt: String? = null,
+
+    val isSynced: Boolean = false,
+
+    val localImagePath: String? = null
 )

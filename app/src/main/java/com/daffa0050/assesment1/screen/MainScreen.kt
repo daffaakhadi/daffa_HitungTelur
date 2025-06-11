@@ -322,7 +322,8 @@ fun MainScreen(navController: NavHostController) {
             modifier = Modifier.padding(innerPadding),
             viewModel = viewModel,
             colorScheme = currentColorScheme,
-            croppedBitmap = croppedBitmap
+            croppedBitmap = croppedBitmap,
+            onImageReset = { croppedBitmap = null }
         )
     }
 

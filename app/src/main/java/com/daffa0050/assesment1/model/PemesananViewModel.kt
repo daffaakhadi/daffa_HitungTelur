@@ -5,13 +5,15 @@ import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.daffa0050.assesment1.database.PemesananDb
-import com.daffa0050.assesment1.network.AuthPreference
 import com.daffa0050.assesment1.network.PemesananRepository
 import com.daffa0050.assesment1.network.TelurApiService
 import com.daffa0050.assesment1.util.SettingsDataStore
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -19,21 +21,31 @@ import kotlinx.coroutines.launch
 class PemesananViewModel(application: Application) : AndroidViewModel(application) {
     private val pemesananDao = PemesananDb.getDatabase(application).pemesananDao()
     private val apiService = TelurApiService.create()
-    private val authPref = AuthPreference(application)
-    private val repository = PemesananRepository(apiService, authPref,pemesananDao, application)
+    private val repository = PemesananRepository(apiService, pemesananDao, application)
 
     val status = MutableStateFlow(TelurApiService.Companion.ApiStatus.SUCCESS)
     val currentUserId: StateFlow<UserData?> = SettingsDataStore(application).userFlow
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
-    val allPemesanan = repository.semuaPemesanan
-        .map { it.sortedByDescending { p -> p.id } }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val pesananMilikUser: StateFlow<List<Pemesanan>> = currentUserId.flatMapLatest { user ->
+        val userId = user?.email
 
-    val totalEceran = allPemesanan.map {
+        if (userId.isNullOrBlank()) {
+            flowOf(emptyList())
+        } else {
+            repository.getPemesananByUserId(userId)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000L),
+        initialValue = emptyList()
+    )
+
+    val totalEceran = pesananMilikUser.map {
         it.filter { p -> p.purchaseType == "Eceran" }.sumOf { p -> p.total }
     }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
-    val totalGrosir = allPemesanan.map {
+    val totalGrosir = pesananMilikUser.map {
         it.filter { p -> p.purchaseType == "Grosir" }.sumOf { p -> p.total }
     }.stateIn(viewModelScope, SharingStarted.Lazily, 0)
 
@@ -77,8 +89,8 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun updatePemesananWithImage(
-        userId: String,
         id: Int,
+        userId: String,
         customerName: String,
         customerAddress: String,
         purchaseType: String,
@@ -90,10 +102,9 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
     ) {
         viewModelScope.launch {
             try {
-                // Panggil fungsi repository yang sudah diubah untuk return OpStatus
                 val response = repository.updatePemesananApi(
-                    userId = userId,
                     id = id,
+                    userId = userId,
                     customerName = customerName,
                     customerAddress = customerAddress,
                     purchaseType = purchaseType,
@@ -104,7 +115,7 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
 
                 if (response.status == "200") {
                     onSuccess()
-                    sinkronisasi(userId) // ambil data terbaru dari server dan update DB
+                    sinkronisasi(userId)
                 } else {
                     onError(response.message ?: "Update gagal")
                 }

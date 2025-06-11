@@ -42,5 +42,8 @@ interface PemesananDao {
     suspend fun clearByUserId(userId: String)
 
     @Query("SELECT * FROM pemesanan WHERE userId = :userId ORDER BY id DESC")
-    suspend fun getByUserId(userId: String): List<Pemesanan>
+    fun getPemesananByUserId(userId: String): Flow<List<Pemesanan>>
+
+    @Query("SELECT * FROM pemesanan WHERE isSynced = 0") // 0 berarti false untuk SQLite
+    suspend fun getUnsyncedPemesanan(): List<Pemesanan>
 }

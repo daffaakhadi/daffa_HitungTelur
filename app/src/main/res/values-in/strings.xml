@@ -90,5 +90,8 @@
     <string name="tambah_telur">Tambah telur</string>
     <string name="relogin">Login Ulang</string>
     <string name="faq_title">FAQ</string>
+    <string name="login_required_message">Anda harus login terlebih dahulu untuk melihat daftar pemesanan.</string>
+    <string name="error_sync_message">Gagal memuat data dari server. Silakan coba lagi nanti.</string>
+    <string name="your_profile">Profil Akun Anda</string>
 
 </resources>

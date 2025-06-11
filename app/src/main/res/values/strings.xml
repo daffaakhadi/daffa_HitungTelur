@@ -89,5 +89,8 @@
     <string name="tambah_telur">Add Egg</string>
     <string name="relogin">Relogin</string>
     <string name="faq_title">FAQ</string>
+    <string name="login_required_message">You must log in first to view the order list.</string>
+    <string name="error_sync_message">Failed to load data from the server. Please try again later.</string>
+    <string name="your_profile">Your Account Profile</string>
 
 </resources>
