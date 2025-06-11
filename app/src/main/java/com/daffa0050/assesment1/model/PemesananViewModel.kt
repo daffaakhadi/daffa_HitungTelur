@@ -8,6 +8,7 @@ import com.daffa0050.assesment1.database.PemesananDb
 import com.daffa0050.assesment1.network.PemesananRepository
 import com.daffa0050.assesment1.network.TelurApiService
 import com.daffa0050.assesment1.util.SettingsDataStore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PemesananViewModel(application: Application) : AndroidViewModel(application) {
     private val pemesananDao = PemesananDb.getDatabase(application).pemesananDao()
@@ -100,31 +102,26 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        viewModelScope.launch {
-            try {
-                val response = repository.updatePemesananApi(
-                    id = id,
-                    userId = userId,
-                    customerName = customerName,
-                    customerAddress = customerAddress,
-                    purchaseType = purchaseType,
-                    amount = amount,
-                    total = total,
-                    bitmap = image
-                )
-
-                if (response.status == "200") {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = repository.updatePemesananApi( // Panggil fungsi yang sudah diperbaiki
+                id = id,
+                userId = userId,
+                customerName = customerName,
+                customerAddress = customerAddress,
+                purchaseType = purchaseType,
+                amount = amount,
+                total = total,
+                bitmap = image
+            )
+            withContext(Dispatchers.Main) {
+                if (result.status == "200") {
                     onSuccess()
-                    sinkronisasi(userId)
                 } else {
-                    onError(response.message ?: "Update gagal")
+                    onError(result.message ?: "Gagal memperbarui data.")
                 }
-            } catch (e: Exception) {
-                onError(e.message ?: "Terjadi kesalahan yang tidak diketahui")
             }
         }
     }
-
 
     fun getPemesananById(id: Int): StateFlow<Pemesanan?> {
         return repository.dao.getPemesananById(id)

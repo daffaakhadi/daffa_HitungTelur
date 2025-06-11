@@ -34,7 +34,7 @@ interface PemesananDao {
     suspend fun deletePemesanan(id: Int)
 
     @Update
-    suspend fun updatePemesanan(pemesanan: Pemesanan)
+    suspend fun update(pemesanan: Pemesanan)
 
     @Delete
     suspend fun delete(pemesanan: Pemesanan)

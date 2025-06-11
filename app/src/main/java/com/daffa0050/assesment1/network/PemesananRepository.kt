@@ -59,8 +59,6 @@ import java.io.FileOutputStream
 
                         outputStream.write(stream.toByteArray())
 
-
-
                         MultipartBody.Part.createFormData(
 
                             "image",
@@ -80,14 +78,9 @@ import java.io.FileOutputStream
                             "telur.jpg",
 
                             ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull())
-
                         )
-
                     }
-
                 }
-
-
 
                 val response = apiService.postPemesanan(
 
@@ -119,7 +112,7 @@ import java.io.FileOutputStream
             }
         }
     suspend fun updatePemesananApi(
-        id : Int,
+        id: Int,
         userId: String,
         customerName: String,
         customerAddress: String,
@@ -128,35 +121,50 @@ import java.io.FileOutputStream
         total: Int,
         bitmap: Bitmap?
     ): OpStatus {
-
-        val userIdBody = userId.toRequestBody()
-        val customerNameBody = customerName.toRequestBody()
-        val customerAddressBody = customerAddress.toRequestBody()
-        val purchaseTypeBody = purchaseType.toRequestBody()
-        val amountBody = amount.toString().toRequestBody()
-        val totalBody = total.toString().toRequestBody()
-
-        val imagePart = bitmap?.let {
-            val file = createTempFile("upload", ".jpg")
-            val stream = FileOutputStream(file)
-            it.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-            stream.flush()
-            stream.close()
-
-            file.asRequestBody("image/jpeg".toMediaType())
-                .let { body -> MultipartBody.Part.createFormData("image", file.name, body) }
+        // Jika offline, langsung gagal karena update butuh koneksi
+        if (!NetworkUtils.isOnline(context)) {
+            return OpStatus(
+                status = "400",
+                message = "Tidak ada koneksi internet untuk melakukan update.",
+                data = null
+            )
         }
 
-        return apiService.updatePemesanan(
-            id = id,
-            userId = userIdBody,
-            customerName = customerNameBody,
-            customerAddress = customerAddressBody,
-            purchaseType = purchaseTypeBody,
-            amount = amountBody,
-            total = totalBody,
-            image = imagePart
-        )
+        try {
+            val userIdBody = userId.toRequestBody()
+            val customerNameBody = customerName.toRequestBody()
+            val customerAddressBody = customerAddress.toRequestBody()
+            val purchaseTypeBody = purchaseType.toRequestBody()
+            val amountBody = amount.toString().toRequestBody()
+            val totalBody = total.toString().toRequestBody()
+            val imagePart = bitmap?.let {
+                val file = createTempFile("upload", ".jpg")
+                val stream = FileOutputStream(file)
+                it.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                stream.flush(); stream.close()
+                file.asRequestBody("image/jpeg".toMediaType())
+                    .let { body -> MultipartBody.Part.createFormData("image", file.name, body) }
+            }
+            val response = apiService.updatePemesanan(
+                id, userIdBody, customerNameBody, customerAddressBody, purchaseTypeBody, amountBody, totalBody, imagePart
+            )
+
+            if (response.status == "200" && response.data != null) {
+                val updatedPemesananFromServer = response.data.copy(isSynced = true)
+
+                dao.update(updatedPemesananFromServer)
+            }
+
+            return response
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return OpStatus(
+                status = "500",
+                message = "Terjadi error saat update: ${e.message}",
+                data = null
+            )
+        }
     }
         suspend fun tambahPemesananApiOnly(pemesanan: Pemesanan): OpStatus {
             val mediaType = "text/plain".toMediaType()
@@ -168,8 +176,6 @@ import java.io.FileOutputStream
             val amountBody = pemesanan.amount.toString().toRequestBody(mediaType)
             val totalBody = pemesanan.total.toString().toRequestBody(mediaType)
 
-
-            // Cek apakah ada path gambar lokal yang tersimpan
             val imagePart = MultipartBody.Part.createFormData(
                 "image",
                 "no_image.jpg",

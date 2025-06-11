@@ -56,8 +56,6 @@ interface TelurApiService {
         @Part image: MultipartBody.Part?
     ): OpStatus
 
-
-
     companion object {
         private const val BASE_URL = "https://egg-api.sendiko.my.id/"
 
