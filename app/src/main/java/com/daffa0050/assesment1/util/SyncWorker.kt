@@ -29,6 +29,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters): Coroutine
                 if (response.status == "200" && response.data != null) {
                     repository.dao.delete(pemesananToSync)
                     val syncedData = response.data.copy(userId = pemesananToSync.userId, isSynced = true)
+                    repository.dao.delete(pemesananToSync)
                     repository.dao.insert(syncedData)
                 }
             }

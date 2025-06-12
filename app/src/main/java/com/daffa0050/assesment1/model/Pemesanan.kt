@@ -38,5 +38,5 @@ data class Pemesanan(
 
     val isSynced: Boolean = false,
 
-    val localImagePath: String? = null
+    val imagePath: String? = null
 )

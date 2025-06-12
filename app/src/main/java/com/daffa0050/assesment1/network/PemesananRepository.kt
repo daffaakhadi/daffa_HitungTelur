@@ -33,81 +33,44 @@ import java.io.FileOutputStream
 
         suspend fun tambahPemesanan(pemesanan: Pemesanan, userId: String, bitmap: Bitmap?) {
 
-            val localPemesanan = pemesanan.copy(userId = userId, isSynced = false)
-
-            dao.insert(localPemesanan)
-
-            if (!NetworkUtils.isOnline(context)) {
-
-                scheduleSync()
-
-                return}
-
-            try {
-
-                val imagePart = withContext(Dispatchers.IO) {
-
-                    if (bitmap != null) {
-
-                        val file = File(context.cacheDir, "upload.jpg")
-
-                        val outputStream = FileOutputStream(file)
-
-                        val stream = ByteArrayOutputStream()
-
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-
-                        outputStream.write(stream.toByteArray())
-
-                        MultipartBody.Part.createFormData(
-
-                            "image",
-
-                            file.name,
-
-                            file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-
-                        )
-
-                    } else {
-
-                        MultipartBody.Part.createFormData(
-
-                            "image",
-
-                            "telur.jpg",
-
-                            ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull())
-                        )
+            if (NetworkUtils.isOnline(context)) {
+                try {
+                    val imagePart = withContext(Dispatchers.IO) {
+                        if (bitmap != null) {
+                            val file = File(context.cacheDir, "upload.jpg")
+                            val outputStream = FileOutputStream(file)
+                            val stream = ByteArrayOutputStream()
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                            outputStream.write(stream.toByteArray())
+                            MultipartBody.Part.createFormData("image", file.name, file.asRequestBody("image/jpeg".toMediaTypeOrNull()))
+                        } else {
+                            MultipartBody.Part.createFormData("image", "telur.jpg", ByteArray(0).toRequestBody("image/*".toMediaTypeOrNull()))
+                        }
                     }
+
+                    val response = apiService.postPemesanan(
+                        userId = userId.toRequestBody(),
+                        customerName = pemesanan.customerName.toRequestBody(),
+                        customerAddress = pemesanan.customerAddress.toRequestBody(),
+                        purchaseType = pemesanan.purchaseType.toRequestBody(),
+                        amount = pemesanan.amount.toString().toRequestBody(),
+                        total = pemesanan.total.toString().toRequestBody(),
+                        image = imagePart
+                    )
+
+                    if ((response.status == "200" || response.status == "201" ) && response.data != null) {
+                        val serverPesanan = response.data.copy(userId = userId, isSynced = true)
+                        dao.insert(serverPesanan)
+                    } else {
+                        throw Exception("Gagal menyimpan pesanan di server: ${response.message}")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    throw e
                 }
-
-                val response = apiService.postPemesanan(
-
-                    userId = userId.toRequestBody(),
-
-                    customerName = pemesanan.customerName.toRequestBody(),
-
-                    customerAddress = pemesanan.customerAddress.toRequestBody(),
-
-                    purchaseType = pemesanan.purchaseType.toRequestBody(),
-
-                    amount = pemesanan.amount.toString().toRequestBody(),
-
-                    total = pemesanan.total.toString().toRequestBody(),
-
-                    image = imagePart
-                )
-                if (response.status == "200" && response.data != null) {
-                    dao.delete(localPemesanan)
-                    val serverPemesanan = response.data.copy(userId = userId, isSynced = true)
-                    dao.insert(serverPemesanan)
-
-                } else {
-                    scheduleSync()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } else {
+                val localPemesanan = pemesanan.copy(userId = userId, isSynced = false)
+                dao.insert(localPemesanan)
                 scheduleSync()
             }
         }
@@ -121,7 +84,7 @@ import java.io.FileOutputStream
         total: Int,
         bitmap: Bitmap?
     ): OpStatus {
-        // Jika offline, langsung gagal karena update butuh koneksi
+
         if (!NetworkUtils.isOnline(context)) {
             return OpStatus(
                 status = "400",

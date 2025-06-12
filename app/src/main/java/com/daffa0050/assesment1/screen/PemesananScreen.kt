@@ -85,17 +85,11 @@ fun ListPemesananScreen(
     val totalGrosir by viewModel.totalGrosir.collectAsState()
     val status by viewModel.status.collectAsState()
     val context = LocalContext.current
-
-    // Mengambil data user yang sedang login dari ViewModel.
-    // Nama variabel di ViewModel sebaiknya 'currentUser' agar lebih jelas.
     val currentUser by viewModel.currentUserId.collectAsStateWithLifecycle()
 
     var expanded by remember { mutableStateOf(false) }
-
-    // LaunchedEffect ini akan berjalan secara otomatis setiap kali
-    // status login pengguna berubah (dari null ke login, atau sebaliknya).
     LaunchedEffect(currentUser) {
-        val userId = currentUser?.email // Ganti .email sesuai nama properti di data class UserData
+        val userId = currentUser?.email
 
         // Hanya panggil sinkronisasi jika ada userId yang valid.
         if (!userId.isNullOrBlank()) {
