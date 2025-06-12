@@ -766,6 +766,8 @@ private fun EditPemesananForm(
 
                         scope.launch {
                             if (userId != null) {
+                                Log.d("UpdateDebug", "Mencoba update dengan nama: '$nama', alamat: '$alamat'")
+
                                 viewModel.updatePemesananWithImage(
                                     id = pemesanan.id,
                                     userId = userId,

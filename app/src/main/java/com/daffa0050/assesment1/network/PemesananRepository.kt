@@ -84,6 +84,7 @@ import java.io.FileOutputStream
         total: Int,
         bitmap: Bitmap?
     ): OpStatus {
+        Log.d("RepoDebug", "Repository menerima nama untuk diupdate: '$customerName'")
 
         if (!NetworkUtils.isOnline(context)) {
             return OpStatus(

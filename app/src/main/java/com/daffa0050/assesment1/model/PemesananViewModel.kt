@@ -2,6 +2,7 @@ package com.daffa0050.assesment1.model
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.daffa0050.assesment1.database.PemesananDb
@@ -102,8 +103,9 @@ class PemesananViewModel(application: Application) : AndroidViewModel(applicatio
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
+        Log.d("ViewModelDebug", "ViewModel menerima nama untuk diupdate: '$customerName'")
         viewModelScope.launch(Dispatchers.IO) {
-            val result = repository.updatePemesananApi( // Panggil fungsi yang sudah diperbaiki
+            val result = repository.updatePemesananApi(
                 id = id,
                 userId = userId,
                 customerName = customerName,
